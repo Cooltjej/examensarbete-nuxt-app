@@ -1,0 +1,27 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "deploy": "firebase deploy",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@firebase/app-types": "^0.9.3",
+    "@mdi/font": "^7.4.47",
+    "firebase": "^10.14.1",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^5.1.1",
+    "nuxt": "^3.14.1592",
+    "nuxt-vuefire": "^1.0.4",
+    "vite-plugin-vuetify": "^2.0.4",
+    "vue": "latest",
+    "vue-router": "latest",
+    "vuefire": "^3.2.0",
+    "vuetify": "^3.7.4"
+  }
+}
