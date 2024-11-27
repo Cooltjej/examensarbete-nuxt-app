@@ -1,5 +1,5 @@
 <template>
-    <header class="bg-gray-700">
+    <header>
     <nav class="container mx-auto p-4 flex justify-end text-white">
       <button class="hover:text-amber-500" @click="signOut">
         Sign Out
