@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Importera Firestore-funktioner
 
 export const useAuthStore = defineStore('auth', () => {
@@ -41,3 +41,5 @@ export const useAuthStore = defineStore('auth', () => {
 }, {
   persist: true,
 });
+
+
