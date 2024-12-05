@@ -1,33 +1,37 @@
-<template>
-  
-    <div>
-        <h1>
-            Sign in to your account
-        </h1>
-        <div v-if="show_alert" >
-            {{ alert_msg }}
-        </div>
-        <form @submit.prevent="login">
-            <div>
-                <label for="email" >
-                    Your email</label>
-                <input type="email" name="email" id="email" v-model="form.email"
-                    placeholder="name@company.com" required>
-            </div>
-            <div>
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" placeholder="••••••••"
-                    v-model="form.password"
-                    required>
-            </div>
-            <button type="submit">
-                Sign In</button>
-            <p>
-                Don't have an account yet?
-                <NuxtLink to="/register" >Sign up</NuxtLink>
-            </p>
-        </form>
-</div>
+<template lang="pug">
+section
+  v-container
+    v-row
+      v-col(cols="12")
+        v-card
+          v-card-title Sign in to your account
+          v-card-text
+            v-alert(
+              v-if="show_alert"
+              type="error"
+              dismissible
+            ) {{ alert_msg }}
+            
+            v-form(@submit.prevent="login")
+              v-text-field(
+                label="Your email"
+                v-model="form.email"
+                placeholder="name@company.com"
+                type="email"
+                required
+              )
+              v-text-field(
+                label="Password"
+                v-model="form.password"
+                placeholder="••••••••"
+                type="password"
+                required
+              )
+              v-btn(type="submit" color="primary") Sign In
+          v-card-actions
+            p
+              | Don't have an account yet?
+              NuxtLink(to="/register") Sign up
           
 </template>
 

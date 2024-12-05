@@ -1,42 +1,44 @@
-<template>
-  <section>
-      <div>
-        <h1>
-            Create account
-        </h1>
-        <div v-if="show_alert" 
-            :class="alert_variant">
-            {{ alert_msg }}
-        </div>
-        <form  @submit.prevent="register">
-            <div>
-                <label for="name" >
-                    Your name</label>
-                <input type="text" name="name" id="name" v-model="form.name"
-                    placeholder="John Smith" required>
-            </div>
-            <div>
-                <label for="email" >
-                    Your email</label>
-                <input type="email" name="email" id="email" v-model="form.email"
-                    placeholder="name@company.com" required>
-            </div>
-            <div>
-                <label for="password" >Password</label>
-                <input type="password" name="password" id="password" placeholder="••••••••"
-                    v-model="form.password"
-                    required>
-            </div>
-            <button type="submit">
-                Create an account</button>
-            <p>
-                Already have an account?
-                <NuxtLink to="/" >Login here</NuxtLink>
-            </p>
-        </form>
-    </div>
-         
-  </section>
+<template lang="pug">
+  section
+  v-container
+    v-row
+      v-col(cols="12")
+        v-card
+          v-card-title Create account
+          v-card-text
+            v-alert(
+              v-if="show_alert"
+              :type="alert_variant"
+              dismissible
+            ) {{ alert_msg }}
+            
+            v-form(@submit.prevent="register")
+              v-text-field(
+                label="Your name"
+                v-model="form.name"
+                placeholder="John Smith"
+                required
+              )
+              v-text-field(
+                label="Your email"
+                v-model="form.email"
+                placeholder="name@company.com"
+                type="email"
+                required
+              )
+              v-text-field(
+                label="Password"
+                v-model="form.password"
+                placeholder="••••••••"
+                type="password"
+                required
+              )
+              v-btn(type="submit" color="primary") Create an account
+            
+          v-card-actions
+            p Already have an account?
+            NuxtLink(to="/") Login here
+
 </template>
 
 <script setup>

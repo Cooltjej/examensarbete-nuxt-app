@@ -1,5 +1,5 @@
 // stores/useChild.js
-import { getFirestore, doc, setDoc, collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, collection, getDocs, query, where, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 export const useChildStore = defineStore('child', () => {
   const db = getFirestore();
@@ -26,10 +26,26 @@ export const useChildStore = defineStore('child', () => {
     });
   }
 
+  async function updateBowelMovement(childId, movementId, movementType) {
+    const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
+    await setDoc(movementRef, {
+      movementType,
+      timestamp: new Date().toISOString(),
+    }, { merge: true });
+  }
+
+  async function deleteBowelMovement(childId, movementId) {
+    const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
+    await deleteDoc(movementRef);
+  }
+
   function listenToBowelMovements(childId, callback) {
     const bowelMovementsRef = collection(doc(db, 'children', childId), 'bowelMovements');
     onSnapshot(bowelMovementsRef, (snapshot) => {
-      const movements = snapshot.docs.map((doc) => doc.data());
+      const movements = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       callback(movements);
     });
   }
@@ -38,6 +54,8 @@ export const useChildStore = defineStore('child', () => {
     addChild,
     fetchChildren,
     addBowelMovement,
+    updateBowelMovement, // Exponera funktionen här
+    deleteBowelMovement, // Exponera funktionen här
     listenToBowelMovements,
   };
 });

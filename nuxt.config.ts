@@ -46,4 +46,9 @@ export default defineNuxtConfig({
 
   ssr: false,
   compatibilityDate: '2024-11-27',
+
+  css: [
+    '@/assets/custom.sass',
+    'vuetify/lib/styles/main.sass'
+    ],
 })
