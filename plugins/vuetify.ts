@@ -4,6 +4,7 @@ import {VBtn} from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import * as labsComponents from 'vuetify/labs/components'
 
+
 export default defineNuxtPlugin(nuxtApp => {
 const vuetify = createVuetify({
 components:{

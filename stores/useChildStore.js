@@ -5,11 +5,13 @@ export const useChildStore = defineStore('child', () => {
   const db = getFirestore();
 
   async function addChild(userId, childData) {
-    await setDoc(doc(collection(db, 'children')), {
+    const newChildRef = doc(collection(db, 'children'));
+    await setDoc(newChildRef, {
       ...childData,
       userId,
       createdAt: new Date().toISOString(),
     });
+    return newChildRef.id; // Returnera ID:t på den nyskapade dokumentet
   }
 
   async function fetchChildren(userId) {
