@@ -28,74 +28,72 @@
             // Skicka in childDetails.id till BowelMovements
             bowel-movements(:child-id="childDetails.id")
     </template>
-    
-    <script setup>
-    import { ref, reactive, onMounted } from 'vue';
-    import { useAuthStore } from '~/stores/useAuth';
-    import { useChildStore } from '~/stores/useChildStore';
-    import BowelMovements from './BowelMovements.vue';
-    
-    const auth = useAuthStore();
-    const childStore = useChildStore();
-    
-    const hasChild = ref(false);
-    const showForm = ref(false);
-    const child = reactive({
-      name: '',
-      age: '',
-      weight: '',
-      height: '',
-    });
-    const childDetails = reactive({});
-    const message = ref('');
-    
-    function handleHasChild(response) {
-      showForm.value = !response;
-      if (response) {
-        checkForChild();
-      }
+
+<script setup>
+import { ref, reactive, onMounted } from "vue";
+import { useAuthStore } from "~/stores/useAuth";
+import { useChildStore } from "~/stores/useChildStore";
+
+const auth = useAuthStore();
+const childStore = useChildStore();
+
+const hasChild = ref(false);
+const showForm = ref(false);
+const child = reactive({
+  name: "",
+  age: "",
+  weight: "",
+  height: "",
+});
+const childDetails = reactive({});
+const message = ref("");
+
+function handleHasChild(response) {
+  showForm.value = !response;
+  if (response) {
+    checkForChild();
+  }
+}
+
+async function checkForChild() {
+  try {
+    const children = await childStore.fetchChildren(auth.user.uid);
+    if (children.length > 0) {
+      Object.assign(childDetails, children[0]);
+      hasChild.value = true;
+      showForm.value = false;
+    } else {
+      showForm.value = true;
     }
-    
-    async function checkForChild() {
-      try {
-        const children = await childStore.fetchChildren(auth.user.uid);
-        if (children.length > 0) {
-          Object.assign(childDetails, children[0]);
-          hasChild.value = true;
-          showForm.value = false;
-        } else {
-          showForm.value = true;
-        }
-      } catch (error) {
-        console.error('Error fetching child:', error);
-      }
+  } catch (error) {
+    console.error("Error fetching child:", error);
+  }
+}
+
+async function saveChild() {
+  try {
+    // Få ID:t på det nya barnet
+    const newChildId = await childStore.addChild(auth.user.uid, child);
+    message.value = "Child saved successfully!";
+
+    // Hämta om barnets data så vi får ID med i childDetails
+    const children = await childStore.fetchChildren(auth.user.uid);
+    if (children.length > 0) {
+      Object.assign(childDetails, children[0]);
+      hasChild.value = true;
+      showForm.value = false;
     }
-    
-    async function saveChild() {
-      try {
-        // Få ID:t på det nya barnet
-        const newChildId = await childStore.addChild(auth.user.uid, child);
-        message.value = 'Child saved successfully!';
-    
-        // Hämta om barnets data så vi får ID med i childDetails
-        const children = await childStore.fetchChildren(auth.user.uid);
-        if (children.length > 0) {
-          Object.assign(childDetails, children[0]);
-          hasChild.value = true;
-          showForm.value = false;
-        }
-      } catch (error) {
-        console.error('Error saving child:', error);
-        message.value = 'Error saving child. Please try again.';
-      }
-    }
-    
-    onMounted(async () => {
-      if (!auth.user) {
-        console.error('User not authenticated.');
-        return;
-      }
-      await checkForChild();
-    });
-    </script>
-    
+  } catch (error) {
+    console.error("Error saving child:", error);
+    message.value = "Error saving child. Please try again.";
+  }
+}
+
+onMounted(async () => {
+  if (!auth.user) {
+    console.error("User not authenticated.");
+    return;
+  }
+  await checkForChild();
+});
+</script>

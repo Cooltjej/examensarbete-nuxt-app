@@ -30,11 +30,12 @@ export const useChildStore = defineStore('child', () => {
 
   async function updateBowelMovement(childId, movementId, movementType) {
     const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
+    // Uppdatera bara movementType, inget timestamp
     await setDoc(movementRef, {
-      movementType,
-      timestamp: new Date().toISOString(),
+      movementType
     }, { merge: true });
   }
+  
 
   async function deleteBowelMovement(childId, movementId) {
     const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
