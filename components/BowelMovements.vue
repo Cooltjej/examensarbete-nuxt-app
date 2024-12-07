@@ -2,15 +2,6 @@
     v-container
       h2 Bowel Movements
       // Lista över bowel movements
-      v-list
-        v-list-item(v-for="movement in bowelMovements" :key="movement.id")
-          v-list-item-title {{ movement.formattedTimestamp }}: {{ movement.movementType }}
-          v-list-item-actions
-            v-btn(icon @click="editBowelMovement(movement)")
-              v-icon mdi-pencil
-            v-btn(icon color="error" @click="deleteBowelMovement(movement.id)")
-              v-icon mdi-delete
-    
       v-btn(@click="openBowelMovementPopup" color="primary") Add Bowel Movement
     
       // Popup för bowel movement
@@ -24,6 +15,15 @@
             v-btn(@click="addBowelMovement('no movement')" color="primary") No Movement
           v-card-actions
             v-btn(@click="cancelPopup" color="secondary") Cancel
+      v-list
+        v-list-item(v-for="movement in bowelMovements" :key="movement.id")
+          v-list-item-title {{ movement.formattedTimestamp }}: {{ movement.movementType }}
+          v-list-item-actions
+            v-btn(icon @click="editBowelMovement(movement)")
+              v-icon mdi-pencil
+            v-btn(icon color="error" @click="deleteBowelMovement(movement.id)")
+              v-icon mdi-delete
+    
     
       v-snackbar(v-model="snackbar.visible", :timeout="snackbar.timeout", :color="snackbar.color")
         | {{ snackbar.message }}
