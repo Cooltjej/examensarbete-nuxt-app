@@ -25,8 +25,7 @@
             p Weight: {{ childDetails.weight }} kg
             p Height: {{ childDetails.height }} cm
             br
-            // Skicka in childDetails.id till BowelMovements
-            bowel-movements(:child-id="childDetails.id")
+            
     </template>
 
 <script setup>

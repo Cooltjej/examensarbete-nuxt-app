@@ -1,49 +1,58 @@
 <template lang="pug">
-    v-container
-      v-row
-        v-col(cols="12")
-          h2 Bowel Movements
-          // Lista över bowel movements (endast de fem senaste)
-          v-btn(@click="openBowelMovementPopup" color="primary") Add Bowel Movement
-          v-list
-            v-list-item(v-for="movement in bowelMovements" :key="movement.id")
-              v-list-item-title {{ movement.formattedTimestamp }}: {{ movement.movementType }}
-              template(#append)
-                v-btn(icon @click="editBowelMovement(movement)")
-                  v-icon mdi-pencil
-                v-btn(icon color="error" @click="deleteBowelMovement(movement.id)")
-                  v-icon mdi-delete
-    
-    
-          // Popup för bowel movement
-          v-dialog(v-model="showPopup", persistent, max-width="400")
-            v-card
-              v-card-title Select Bowel Movement
-              v-card-text
-                v-btn.mb-2(@click="addBowelMovement('small movement')" color="primary") Small Movement
-                v-btn.mb-2(@click="addBowelMovement('large movement')" color="primary") Large Movement
-                v-btn.mb-2(@click="addBowelMovement('diarrhea')" color="primary") Diarrhea
-                v-btn(@click="addBowelMovement('no movement')" color="primary") No Movement
-              v-card-actions
-                v-btn(@click="cancelPopup" color="secondary") Cancel
-    
-          v-snackbar(v-model="snackbar.visible", :timeout="snackbar.timeout", :color="snackbar.color")
-            | {{ snackbar.message }}
-    </template>
+  v-container
+    h2 Bowel Movements
+    div(v-if="childId")
+      // Lista över bowel movements
+      v-list
+        v-list-item(v-for="movement in bowelMovements" :key="movement.id")
+          v-list-item-title {{ movement.formattedTimestamp }}: {{ movement.movementType }} ({{ movement.timeOfDay }})
+          template(#append)
+            v-btn(icon @click="editBowelMovement(movement)")
+              v-icon mdi-pencil
+            v-btn(icon color="error" @click="deleteBowelMovement(movement.id)")
+              v-icon mdi-delete
+  
+      v-btn(@click="openBowelMovementPopup" color="primary") Add Bowel Movement
+  
+      // Popup för Bowel Movement
+      v-dialog(v-model="showPopup", persistent, max-width="400")
+        v-card
+          v-card-title Select Bowel Movement
+          v-card-text
+            // MovementType knappar
+            v-btn.mb-2(@click="selectMovementType('small movement')" color="primary") Small Movement
+            v-btn.mb-2(@click="selectMovementType('large movement')" color="primary") Large Movement
+            v-btn.mb-2(@click="selectMovementType('diarrhea')" color="primary") Diarrhea
+            v-btn(@click="selectMovementType('no movement')" color="primary") No Movement
+  
+            h3 Time of Day
+            // Använd v-radio direkt istället för :items
+            v-radio-group(v-model="timeOfDay" class="mt-4")
+              v-radio(v-for="item in timeOfDayItems" :key="item.value" :value="item.value" :label="item.title")
+  
+          v-card-actions
+            v-btn(@click="saveBowelMovement" color="primary") Save
+            v-btn(@click="cancelPopup" color="secondary") Cancel
+  
+      v-snackbar(v-model="snackbar.visible", :timeout="snackbar.timeout", :color="snackbar.color")
+        | {{ snackbar.message }}
+    div(v-else)
+      | Loading or no child found...
+  </template>
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useAuthStore } from "~/stores/useAuth";
 import { useChildStore } from "~/stores/useChildStore";
-import { getFirestore, doc, deleteDoc } from "firebase/firestore";
 
-const db = getFirestore();
 const auth = useAuthStore();
 const childStore = useChildStore();
 
-const bowelMovements = ref([]); // Vi använder bara bowelMovements
+const childId = ref(null);
+const bowelMovements = ref([]);
 const showPopup = ref(false);
 const selectedMovementId = ref(null);
+
 const snackbar = reactive({
   visible: false,
   message: "",
@@ -51,10 +60,24 @@ const snackbar = reactive({
   timeout: 3000,
 });
 
-const childDetails = ref(null); // Här lagrar vi barnets info inklusive id
+const timeOfDay = ref("morning"); // default
+const timeOfDayItems = [
+  { title: "Morning", value: "morning" },
+  { title: "Noon", value: "noon" },
+  { title: "Afternoon", value: "afternoon" },
+  { title: "Evening", value: "evening" },
+  { title: "Nighttime", value: "nighttime" },
+];
+
+const movementType = ref(null);
 
 function openBowelMovementPopup() {
+  resetForm();
   showPopup.value = true;
+}
+
+function selectMovementType(type) {
+  movementType.value = type;
 }
 
 function cancelPopup() {
@@ -62,50 +85,51 @@ function cancelPopup() {
   showPopup.value = false;
 }
 
-async function addBowelMovement(movementType) {
+async function saveBowelMovement() {
+  if (!childId.value) {
+    console.error("No childId provided.");
+    return;
+  }
+
+  if (!movementType.value) {
+    snackbar.message = "Please select a movement type.";
+    snackbar.color = "error";
+    snackbar.visible = true;
+    return;
+  }
+
   try {
-    if (!childDetails.value?.id) {
-      console.error("No childId found.");
-      return;
-    }
     if (selectedMovementId.value) {
-      await childStore.updateBowelMovement(
-        childDetails.value.id,
+      await childStore.updateBowelMovementWithTime(
+        childId.value,
         selectedMovementId.value,
-        movementType
+        movementType.value,
+        timeOfDay.value
       );
-      selectedMovementId.value = null;
+      snackbar.message = "Bowel movement updated successfully!";
     } else {
-      await childStore.addBowelMovement(childDetails.value.id, movementType);
+      await childStore.addBowelMovementWithTime(
+        childId.value,
+        movementType.value,
+        timeOfDay.value
+      );
+      snackbar.message = "Bowel movement added successfully!";
     }
-    snackbar.message = `${movementType} ${
-      selectedMovementId.value ? "updated" : "added"
-    } successfully!`;
     snackbar.color = "success";
     snackbar.visible = true;
     showPopup.value = false;
   } catch (error) {
-    console.error("Error adding/updating bowel movement:", error);
-    snackbar.message = "Error adding or updating bowel movement.";
+    console.error("Error saving bowel movement:", error);
+    snackbar.message = "Error saving bowel movement.";
     snackbar.color = "error";
     snackbar.visible = true;
   }
 }
 
 async function deleteBowelMovement(movementId) {
+  if (!childId.value) return;
   try {
-    if (!childDetails.value?.id) {
-      console.error("No childId found.");
-      return;
-    }
-    const movementRef = doc(
-      db,
-      "children",
-      childDetails.value.id,
-      "bowelMovements",
-      movementId
-    );
-    await deleteDoc(movementRef);
+    await childStore.deleteBowelMovement(childId.value, movementId);
     snackbar.message = "Movement deleted successfully!";
     snackbar.color = "success";
     snackbar.visible = true;
@@ -119,39 +143,30 @@ async function deleteBowelMovement(movementId) {
 
 function editBowelMovement(movement) {
   selectedMovementId.value = movement.id;
-  openBowelMovementPopup();
+  movementType.value = movement.movementType;
+  timeOfDay.value = movement.timeOfDay;
+  showPopup.value = true;
 }
 
 onMounted(async () => {
-  // Se till att användaren är inloggad
   if (!auth.user) {
     console.error("User not authenticated.");
     return;
   }
 
-  // Hämta barnets data
   const children = await childStore.fetchChildren(auth.user.uid);
   if (children.length > 0) {
-    childDetails.value = children[0];
+    childId.value = children[0].id;
+
+    childStore.listenToBowelMovements(childId.value, (movements) => {
+      bowelMovements.value = movements.map((movement) => ({
+        ...movement,
+        formattedTimestamp: formatTimestamp(movement.timestamp),
+      }));
+    });
   } else {
     console.error("No child found.");
-    return;
   }
-
-  const updateMovements = (movements) => {
-    const sorted = movements.sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    );
-    // Ta de fem senaste
-    const recentFive = sorted.slice(0, 5);
-
-    bowelMovements.value = recentFive.map((movement) => ({
-      ...movement,
-      formattedTimestamp: formatTimestamp(movement.timestamp),
-    }));
-  };
-
-  childStore.listenToBowelMovements(childDetails.value.id, updateMovements);
 });
 
 function formatTimestamp(timestamp) {
@@ -164,5 +179,11 @@ function formatTimestamp(timestamp) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function resetForm() {
+  movementType.value = null;
+  timeOfDay.value = "morning";
+  selectedMovementId.value = null;
 }
 </script>

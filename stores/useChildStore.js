@@ -20,19 +20,20 @@ export const useChildStore = defineStore('child', () => {
     return querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
 
-  async function addBowelMovement(childId, movementType) {
+  async function addBowelMovementWithTime(childId, movementType, timeOfDay) {
     const bowelMovementsRef = collection(doc(db, 'children', childId), 'bowelMovements');
     await setDoc(doc(bowelMovementsRef), {
       movementType,
+      timeOfDay,
       timestamp: new Date().toISOString(),
     });
   }
 
-  async function updateBowelMovement(childId, movementId, movementType) {
+  async function updateBowelMovementWithTime(childId, movementId, movementType, timeOfDay) {
     const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
-    // Uppdatera bara movementType, inget timestamp
     await setDoc(movementRef, {
-      movementType
+      movementType,
+      timeOfDay
     }, { merge: true });
   }
   
@@ -52,13 +53,49 @@ export const useChildStore = defineStore('child', () => {
       callback(movements);
     });
   }
+  async function addSleepLog(childId, fromTime, toTime) {
+    const sleepRef = collection(doc(db, 'children', childId), 'sleep');
+    const newSleepRef = doc(sleepRef);
+    await setDoc(newSleepRef, {
+      fromTime,
+      toTime,
+      timestamp: new Date().toISOString(), // För att sortera på senaste
+    });
+  }
 
+  async function updateSleepLog(childId, logId, fromTime, toTime) {
+    const sleepRef = doc(db, 'children', childId, 'sleep', logId);
+    await setDoc(sleepRef, {
+      fromTime,
+      toTime
+    }, { merge: true });
+  }
+
+  async function deleteSleepLog(childId, logId) {
+    const sleepRef = doc(db, 'children', childId, 'sleep', logId);
+    await deleteDoc(sleepRef);
+  }
+
+  function listenToSleepLogs(childId, callback) {
+    const sleepRef = collection(doc(db, 'children', childId), 'sleep');
+    onSnapshot(sleepRef, (snapshot) => {
+      const logs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(logs);
+    });
+  }
   return {
     addChild,
     fetchChildren,
-    addBowelMovement,
-    updateBowelMovement, // Exponera funktionen här
+    addBowelMovementWithTime,
+    updateBowelMovementWithTime, // Exponera funktionen här
     deleteBowelMovement, // Exponera funktionen här
     listenToBowelMovements,
+    addSleepLog,
+    updateSleepLog,
+    deleteSleepLog,
+    listenToSleepLogs,
   };
 });
