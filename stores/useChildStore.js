@@ -86,16 +86,52 @@ export const useChildStore = defineStore('child', () => {
       callback(logs);
     });
   }
+
+  async function addBottleFeeding(childId, feedingData) {
+    // feedingData förväntas vara ett objekt innehållande alla fält (volume, incrementVolume, timingChoice, specificTime, timeOfDay, babyBurp, timestamp)
+    const bottleRef = collection(doc(db, 'children', childId), 'bottle');
+    const newFeedingRef = doc(bottleRef);
+    await setDoc(newFeedingRef, {
+      ...feedingData
+    });
+  }
+  
+  async function updateBottleFeeding(childId, feedingId, feedingData) {
+    const feedingRef = doc(db, 'children', childId, 'bottle', feedingId);
+    await setDoc(feedingRef, {
+      ...feedingData
+    }, { merge: true });
+  }
+  
+  async function deleteBottleFeeding(childId, feedingId) {
+    const feedingRef = doc(db, 'children', childId, 'bottle', feedingId);
+    await deleteDoc(feedingRef);
+  }
+  
+  function listenToBottleFeedings(childId, callback) {
+    const bottleRef = collection(doc(db, 'children', childId), 'bottle');
+    onSnapshot(bottleRef, (snapshot) => {
+      const feedings = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(feedings);
+    });
+  }
   return {
     addChild,
     fetchChildren,
     addBowelMovementWithTime,
-    updateBowelMovementWithTime, // Exponera funktionen här
-    deleteBowelMovement, // Exponera funktionen här
+    updateBowelMovementWithTime,
+    deleteBowelMovement,
     listenToBowelMovements,
     addSleepLog,
     updateSleepLog,
     deleteSleepLog,
     listenToSleepLogs,
+    addBottleFeeding,
+    updateBottleFeeding,
+    deleteBottleFeeding,
+    listenToBottleFeedings,
   };
 });
