@@ -43,34 +43,30 @@
 
 <script setup>
 const form = reactive({
-  name: '',
-  email: '',
-  password: '',
-})
+  name: "",
+  email: "",
+  password: "",
+});
 
-const show_alert = ref(false)
-const alert_variant = ref('bg-blue-500')
-const alert_msg = ref('Please wait! Your account is being created.')
+const show_alert = ref(false);
+const alert_variant = ref("bg-blue-500");
+const alert_msg = ref("Please wait! Your account is being created.");
 
-const auth = useAuthStore()
-const router = useRouter()
+const auth = useAuthStore();
+const router = useRouter();
 
 async function register() {
-  show_alert.value = true
-  alert_variant.value = 'bg-blue-500'
-  alert_msg.value = 'Please wait! Your account is being created.'
+  show_alert.value = true;
+  alert_msg.value = "Please wait! Your account is being created.";
 
   try {
-      await auth.createUser(form)
+    await auth.createUser(form);
   } catch (error) {
-      show_alert.value = true
-      alert_variant.value = 'bg-red-500'
-      alert_msg.value = 'An unexpected error occurred. Please try again later.'
-      return
+    show_alert.value = true;
+    alert_msg.value = "An unexpected error occurred. Please try again later.";
+    return;
   }
-  alert_variant.value = 'bg-green-500'
-  alert_msg.value = 'Success! Your account is created.'
-  router.push({ path: "/private" })
+  alert_msg.value = "Success! Your account is created.";
+  router.push({ path: "/private" });
 }
-
 </script>
