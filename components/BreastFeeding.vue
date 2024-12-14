@@ -15,9 +15,8 @@
           v-time-picker(v-model="toTimeVal" format="24hr" view="hours")
     
           h3 Did your baby burp?
-          v-radio-group(v-model="babyBurpBreast")
-            v-radio(label="Yes" value="yes")
-            v-radio(label="No" value="no")
+          v-checkbox(v-model="babyBurpBreast" label="Did your baby burp?")
+
     
         v-card-actions
           v-btn(@click="saveFeeding" color="primary") Save
@@ -93,7 +92,7 @@ function loadFeeding(f) {
   breastChoice.value = f.breast || "left";
   fromTimeVal.value = f.fromTime || "12:00";
   toTimeVal.value = f.toTime || "12:00";
-  babyBurpBreast.value = f.babyBurp ? "yes" : "no";
+  babyBurpBreast.value = f.babyBurp === true; // om f.babyBurp är true, sätt till true annars false
 }
 
 function closeDialog() {
@@ -115,7 +114,7 @@ async function saveFeeding() {
     breast: breastChoice.value,
     fromTime: fromTimeVal.value,
     toTime: toTimeVal.value,
-    babyBurp: babyBurpBreast.value === "yes",
+    babyBurp: babyBurpBreast.value,
   };
 
   // Konstruera en timestamp för sorting baserat på fromTimeVal

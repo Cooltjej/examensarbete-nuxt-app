@@ -4,13 +4,13 @@
     div(v-if="childId")
       v-btn(@click="openBottle" color="primary") Bottle
       v-btn(@click="openBreast" color="primary") Breastfeeding
-  
+
       h3 Latest Feedings
       v-list
         v-list-item(v-for="feeding in allFeedings" :key="feeding.id")
           v-list-item-title
             // Visa datum
-            | {{ formatDate(feeding.timestamp) }} 
+            | {{ formatDate(feeding.timestamp) }}
             br
             template(v-if="feeding.type === 'bottle'")
               | Bottle feeding: {{ feeding.volume }}ml +{{ feeding.incrementVolume }}ml
@@ -18,7 +18,7 @@
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
               br
               | {{ formatFeedingTime(feeding) }}
-  
+
             template(v-else-if="feeding.type === 'breastfeeding'")
               | Breastfeeding
               br
@@ -27,14 +27,13 @@
               | From {{ feeding.fromTime }} to {{ feeding.toTime }}
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
-  
-          // Här lägger vi v-list-item-actions för edit/delete-knapparna
+
           template(#append)
             v-btn(icon @click="editFeeding(feeding)")
               v-icon mdi-pencil
             v-btn(icon color="error" @click="deleteFeeding(feeding)")
               v-icon mdi-delete
-  
+
       // Komponenter för popups
       bottle-feeding(
         v-if="showBottle"
@@ -44,7 +43,7 @@
         @closed="closeBottle"
         @refresh="handleRefresh($event)"
       )
-  
+
       breast-feeding(
         v-if="showBreast"
         :child-id="childId"
@@ -53,10 +52,10 @@
         @closed="closeBreast"
         @refresh="handleRefresh($event)"
       )
-  
+
     div(v-else)
       | Loading or no child found...
-  
+
   // Snackbar
   snackbar-message(
     :message="snackbarMessage"
@@ -64,7 +63,7 @@
     :show="snackbarShow"
     @update:show="snackbarShow = $event"
   )
-  </template>
+</template>
 
 <script setup>
 import { ref, onMounted } from "vue";
@@ -120,7 +119,15 @@ onMounted(async () => {
 });
 
 function openBottle() {
-  editFeedingData.value = null; // Ny feeding
+  editFeedingData.value = {
+    volume: null,
+    incrementVolume: null,
+    fromTime: "12:00",
+    toTime: "12:00",
+    timingChoice: "currentTime",
+    timeOfDay: "morning",
+    babyBurp: false
+  }; // Ny feeding
   showBottle.value = true;
 }
 
@@ -144,12 +151,13 @@ function updateAllFeedings() {
   const sorted = combined.sort(
     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
   );
-  allFeedings.value = sorted.slice(0, 5);
+  allFeedings.value = sorted.slice(0, 15);
 }
 
 function editFeeding(feeding) {
   // Sätt feeding i edit-läget
   editFeedingData.value = feeding;
+  console.log(feeding)
   if (feeding.type === "bottle") {
     showBottle.value = true;
   } else if (feeding.type === "breastfeeding") {
@@ -217,14 +225,15 @@ function formatFeedingTime(feeding) {
       });
     } else if (feeding.timingChoice === "specificTime") {
       const d = formatDate(feeding.timestamp);
+      // Visa fromTime och toTime endast om specificTime valts
       return `${d} ${feeding.fromTime} - ${feeding.toTime}`;
     } else if (feeding.timingChoice === "timeOfDay") {
       const d = formatDate(feeding.timestamp);
+      // Visa INTE fromTime/toTime här, bara datum + timeOfDay
       return `${d} ${feeding.timeOfDay}`;
     }
     return formatDate(feeding.timestamp);
   }
-  // För breastfeeding visas already fromTime/toTime i template
   return "";
 }
 </script>
