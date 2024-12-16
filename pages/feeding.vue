@@ -29,6 +29,17 @@
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
 
+            template(v-else-if="feeding.type === 'solidfeeding'")
+              | Solid Food
+              br
+              | Solid Type: {{ feeding.solidType }}
+              br
+              | Amount: {{ feeding.amount }}
+              br
+              | {{ formatFeedingTime(feeding) }}
+              br
+              
+
           template(#append)
             v-btn(icon @click="editFeeding(feeding)")
               v-icon mdi-pencil
@@ -54,6 +65,15 @@
         @refresh="handleRefresh($event)"
       )
 
+      solid-feeding(
+        v-if="showSolid"
+        :child-id="childId"
+        :show="showSolid"
+        v-model:feeding="editFeedingData"
+        @closed="closeSolid"
+        @refresh="handleRefresh($event)"
+      )
+
     div(v-else)
       | Loading or no child found...
 
@@ -72,6 +92,7 @@ import { useAuthStore } from "~/stores/useAuth";
 import { useChildStore } from "~/stores/useChildStore";
 import BottleFeeding from "~/components/BottleFeeding.vue";
 import BreastFeeding from "~/components/BreastFeeding.vue";
+import SolidFeeding from "~/components/SolidFeeding.vue";
 import SnackbarMessage from "~/components/SnackbarMessage.vue";
 
 const auth = useAuthStore();
@@ -82,6 +103,8 @@ const childId = ref(null);
 // Visa/hide popups
 const showBottle = ref(false);
 const showBreast = ref(false);
+const showSolid = ref(false);
+
 
 // Hantera vilken feeding vi redigerar
 const editFeedingData = ref(null);
@@ -89,6 +112,7 @@ const editFeedingData = ref(null);
 // Lista över feedings
 let bottleList = [];
 let breastList = [];
+let solidList = [];
 const allFeedings = ref([]);
 
 // Snackbar-states
@@ -112,6 +136,11 @@ onMounted(async () => {
 
     childStore.listenToBreastfeedings(childId.value, (feedings) => {
       breastList = feedings.map((f) => ({ ...f, type: "breastfeeding" }));
+      updateAllFeedings();
+    });
+
+    childStore.listenToSolidfeedings(childId.value, (feedings) => {
+      solidList = feedings.map((f) => ({ ...f, type: "solidfeeding" }));
       updateAllFeedings();
     });
   } else {
@@ -145,6 +174,23 @@ function openBreast() {
   showBreast.value = true;
 }
 
+function openSolid() {
+  editFeedingData.value = {
+    solidType: null,
+    jarChoice: null,
+    squeezeChoice: null,
+    tastingChoice: null,
+    teaspoonAmount: null,
+    squeezeAmount: null,
+    ownAmount: null,
+    fromTime: "12:00",
+    toTime: "12:00",
+    timingChoice: "currentTime",
+    timeOfDay: "morning",
+  };
+  showSolid.value = true;
+}
+
 function closeBottle() {
   showBottle.value = false;
   editFeedingData.value = null;
@@ -155,8 +201,13 @@ function closeBreast() {
   editFeedingData.value = null;
 }
 
+function closeSolid() {
+  showSolid.value = false;
+  editFeedingData.value = null;
+}
+
 function updateAllFeedings() {
-  const combined = [...bottleList, ...breastList];
+  const combined = [...bottleList, ...breastList, ...solidList];
   const sorted = combined.sort(
     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
   );
@@ -164,13 +215,13 @@ function updateAllFeedings() {
 }
 
 function editFeeding(feeding) {
-  // Sätt feeding i edit-läget
   editFeedingData.value = feeding;
-  console.log(feeding)
   if (feeding.type === "bottle") {
     showBottle.value = true;
   } else if (feeding.type === "breastfeeding") {
     showBreast.value = true;
+  } else if (feeding.type === "solidfeeding") {
+    showSolid.value = true;
   }
 }
 
@@ -181,6 +232,8 @@ async function deleteFeeding(feeding) {
       await childStore.deleteBottleFeeding(childId.value, feeding.id);
     } else if (feeding.type === "breastfeeding") {
       await childStore.deleteBreastfeeding(childId.value, feeding.id);
+    } else if (feeding.type === "solidfeeding") {
+      await childStore.deleteSolidfeeding(childId.value, feeding.id);
     }
     showSnackbar("Feeding deleted successfully!", "success");
   } catch (error) {
@@ -226,7 +279,8 @@ function formatDate(date) {
 }
 
 function formatFeedingTime(feeding) {
-  if (feeding.type === "bottle" || feeding.type === "breastfeeding") {
+  // Include solidfeeding in the condition
+  if (feeding.type === "bottle" || feeding.type === "breastfeeding" || feeding.type === "solidfeeding") {
     if (feeding.timingChoice === "currentTime") {
       return new Date(feeding.timestamp).toLocaleTimeString("sv-SE", {
         hour: "2-digit",
