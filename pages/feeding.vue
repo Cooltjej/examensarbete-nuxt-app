@@ -4,7 +4,7 @@
     div(v-if="childId")
       v-btn(@click="openBottle" color="primary") Bottle
       v-btn(@click="openBreast" color="primary") Breastfeeding
-
+      v-btn(@click="openSolid" color="primary") Solid
       h3 Latest Feedings
       v-list
         v-list-item(v-for="feeding in allFeedings" :key="feeding.id")
@@ -24,7 +24,8 @@
               br
               | Breast: {{ feeding.breast }}
               br
-              | From {{ feeding.fromTime }} to {{ feeding.toTime }}
+              // istället för From ... to ...
+              | {{ formatFeedingTime(feeding) }}
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
 
@@ -48,7 +49,7 @@
         v-if="showBreast"
         :child-id="childId"
         :show="showBreast"
-        :feeding="editFeedingData"
+        v-model:feeding="editFeedingData"
         @closed="closeBreast"
         @refresh="handleRefresh($event)"
       )
@@ -132,7 +133,15 @@ function openBottle() {
 }
 
 function openBreast() {
-  editFeedingData.value = null;
+  // Instead of null, set the default feeding data you want.
+  editFeedingData.value = {
+    breast: "left",
+    fromTime: "12:00",
+    toTime: "12:00",
+    timingChoice: "currentTime",
+    timeOfDay: "morning",
+    babyBurp: false
+  };
   showBreast.value = true;
 }
 
@@ -217,7 +226,7 @@ function formatDate(date) {
 }
 
 function formatFeedingTime(feeding) {
-  if (feeding.type === "bottle") {
+  if (feeding.type === "bottle" || feeding.type === "breastfeeding") {
     if (feeding.timingChoice === "currentTime") {
       return new Date(feeding.timestamp).toLocaleTimeString("sv-SE", {
         hour: "2-digit",
@@ -225,11 +234,9 @@ function formatFeedingTime(feeding) {
       });
     } else if (feeding.timingChoice === "specificTime") {
       const d = formatDate(feeding.timestamp);
-      // Visa fromTime och toTime endast om specificTime valts
       return `${d} ${feeding.fromTime} - ${feeding.toTime}`;
     } else if (feeding.timingChoice === "timeOfDay") {
       const d = formatDate(feeding.timestamp);
-      // Visa INTE fromTime/toTime här, bara datum + timeOfDay
       return `${d} ${feeding.timeOfDay}`;
     }
     return formatDate(feeding.timestamp);

@@ -1,7 +1,7 @@
 <template lang="pug">
   v-dialog(v-model="localShow" persistent max-width="400")
     v-card
-      v-card-title Bottle Feeding 
+      v-card-title Bottle Feeding {{feeding.toTime}}
       v-card-text
         h3 Bottle Volume (ml)
         v-select(v-model="feeding.volume" :items="bottleVolumeItems" label="Volume" outlined)
@@ -45,6 +45,8 @@ childId: { type: String, required: true },
 show: { type: Boolean, default: false },
 });
 
+const emits = defineEmits(["closed", "refresh"]);
+
 const feeding = defineModel('feeding',  { default:
 {
   volume: null,
@@ -57,12 +59,7 @@ const feeding = defineModel('feeding',  { default:
 }
 })
 
-const emits = defineEmits(["closed", "refresh"]);
-
-// Använd childStore för att spara och uppdatera feedings
 const childStore = useChildStore();
-
-// Lokala states
 const localShow = ref(props.show);
 
 // När dialog stängs
@@ -74,13 +71,6 @@ if (!val) {
 const snackbarShow = ref(false);
 const snackbarMessage = ref("");
 const snackbarColor = ref("success");
-
-// Funktion för att visa snackbar
-function showSnackbar(msg, color = "success") {
-snackbarMessage.value = msg;
-snackbarColor.value = color;
-snackbarShow.value = true;
-}
 
 const bottleVolumeItems = [0, 100, 200, 300, 400];
 const incrementVolumeItems = [];
@@ -95,27 +85,6 @@ const timeOfDayRadioItems = [
 { title: "Evening", value: "evening" },
 { title: "Nighttime", value: "nighttime" },
 ];
-
-function resetForm() {
-feeding.value.volume = null;
-feeding.value.incrementVolume = null;
-feeding.value.timingChoice = "currentTime";
-feeding.value.fromTime = "12:00";
-feeding.value.toTime = "12:00";
-feeding.value.timeOfDay = "morning";
-feeding.value.babyBurp = "no";
-}
-
-function loadFeeding(f) {
-// Ladda data från befintlig feeding
-feeding.value.volume = f.volume;
-feeding.value.incrementVolume = f.incrementVolume;
-feeding.value.timingChoice = f.timingChoice || "currentTime";
-feeding.value.fromTime = f.fromTime || "12:00";
-feeding.value.toTime = f.toTime || "12:00";
-feeding.value.timeOfDay = f.timeOfDay || "morning";
-feeding.value.babyBurp = f.babyBurp ? "yes" : "no";
-}
 
 function closeDialog() {
 localShow.value = false;
@@ -195,4 +164,6 @@ now.setHours(parseInt(H, 10));
 now.setMinutes(parseInt(M, 10));
 return now;
 }
+
+
 </script>

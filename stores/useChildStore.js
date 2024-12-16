@@ -145,6 +145,33 @@
         callback(feedings);
       });
     }
+
+    async function addSolidfeeding(childId, feedingData) {
+      const solidRef = collection(doc(db, 'children', childId), 'solidfeeding');
+      const newFeedingRef = doc(solidRef);
+      await setDoc(newFeedingRef, feedingData);
+    }
+    
+    async function updateSolidfeeding(childId, feedingId, feedingData) {
+      const feedingRef = doc(db, 'children', childId, 'solidfeeding', feedingId);
+      await setDoc(feedingRef, feedingData, { merge: true });
+    }
+    
+    async function deleteSolidfeeding(childId, feedingId) {
+      const feedingRef = doc(db, 'children', childId, 'solidfeeding', feedingId);
+      await deleteDoc(feedingRef);
+    }
+    
+    function listenToSolidfeedings(childId, callback) {
+      const solidRef = collection(doc(db, 'children', childId), 'solidfeeding');
+      onSnapshot(solidRef, (snapshot) => {
+        const feedings = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        callback(feedings);
+      });
+    }
     return {
       addChild,
       fetchChildren,
@@ -163,6 +190,10 @@
       addBreastfeeding,
       updateBreastfeeding,
       deleteBreastfeeding,
-      listenToBreastfeedings
+      listenToBreastfeedings,
+      addSolidfeeding,
+      updateSolidfeeding,
+      deleteSolidfeeding,
+      listenToSolidfeedings
     };
   });

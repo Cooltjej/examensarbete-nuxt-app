@@ -10,18 +10,18 @@
     <template v-if="timingChoice === 'specificTime'">
       <h4>Started</h4>
       <v-time-picker
-        v-model="fromTime"
-        format="24hr"
-        view="hours"
+      v-model="fromTime"
+      format="24hr"
+      view="hours" @update:hour="startHourSelect"
       />
       <span>{{ fromTime }}</span>
       <h4>Finished</h4>
       <v-time-picker
-        v-model="toTime"
-        format="24hr"
-        view="hours"
+      v-model="toTime"
+      format="24hr"
+      view="hours" @update:hour="endHourSelect"
       />
-    </template>
+</template>
 
     <template v-else-if="timingChoice === 'timeOfDay'">
       <v-radio-group v-model="timeOfDay" >
@@ -53,5 +53,14 @@ const fromTime = defineModel('fromTime', { required: false })
 const toTime = defineModel('toTime', { required: false })
 const timeOfDay = defineModel('timeOfDay', { required: false })
 
+function startHourSelect(e){
+const old_time = fromTime.value
+fromTime.value= e+":"+old_time.split(":")[1]
+}
+
+function endHourSelect(e){
+const old_time = toTime.value
+toTime.value= e+":"+old_time.split(":")[1]
+}
 
 </script>
