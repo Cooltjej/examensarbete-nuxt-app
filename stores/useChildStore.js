@@ -172,6 +172,33 @@
         callback(feedings);
       });
     }
+
+    async function addSickness(childId, sicknessData) {
+      const sicknessRef = collection(doc(db, 'children', childId), 'sickness');
+      const newSicknessRef = doc(sicknessRef);
+      await setDoc(newSicknessRef, sicknessData);
+    }
+    
+    async function updateSickness(childId, sicknessId, sicknessData) {
+      const sicknessRef = doc(db, 'children', childId, 'sickness', sicknessId);
+      await setDoc(sicknessRef, sicknessData, { merge: true });
+    }
+    
+    async function deleteSickness(childId, sicknessId) {
+      const sicknessRef = doc(db, 'children', childId, 'sickness', sicknessId);
+      await deleteDoc(sicknessRef);
+    }
+    
+    function listenToSicknesses(childId, callback) {
+      const sicknessRef = collection(doc(db, 'children', childId), 'sickness');
+      onSnapshot(sicknessRef, (snapshot) => {
+        const sicknesses = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        callback(sicknesses);
+      });
+    }
     return {
       addChild,
       fetchChildren,
@@ -194,6 +221,10 @@
       addSolidfeeding,
       updateSolidfeeding,
       deleteSolidfeeding,
-      listenToSolidfeedings
+      listenToSolidfeedings,
+      addSickness,
+      listenToSicknesses,
+      updateSickness,
+      deleteSickness,
     };
   });
