@@ -22,7 +22,6 @@
             // MovementType knappar
             v-btn.mb-2(@click="selectMovementType('small movement')" color="primary") Small Movement
             v-btn.mb-2(@click="selectMovementType('large movement')" color="primary") Large Movement
-            v-btn.mb-2(@click="selectMovementType('diarrhea')" color="primary") Diarrhea
             v-btn(@click="selectMovementType('no movement')" color="primary") No Movement
   
             h3 Time of Day

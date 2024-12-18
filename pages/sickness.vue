@@ -1,3 +1,4 @@
+<!-- pages/sickness.vue -->
 <template lang="pug">
   v-container
     h2 Sickness Log
@@ -14,67 +15,76 @@
       h3 Latest Sickness Logs
       v-list
         v-list-item(v-for="item in allSicknesses" :key="item.id")
-          v-list-item-content
-            v-list-item-title
-              | {{ formatDate(item.timestamp) }}
+          v-list-item-title
+            | {{ formatDate(item.timestamp) }}
+            br
+            // Sickness type specific fields
+            template(v-if="item.sicknessType === 'fever'")
+              | Fever: 
               br
-              template(v-if="item.sicknessType === 'fever'")
-                | Fever: Temp: {{ item.temperature }}°C
-                br
-                | Notes: {{ item.notes }}
-                br
-                template(v-if="item.hadMedicine")
-                  | Medicine Given Time: {{ item.medicineTime }}
-                br
+              |Temp: {{ item.temperature }}°C
+              br
 
-              template(v-else-if="item.sicknessType === 'common_cold'")
-                | Common Cold:
-                template(v-if="item.hasFever")
-                  | Temp: {{ item.temperature }}°C,
-                | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
+            template(v-else-if="item.sicknessType === 'common_cold'")
+              | Common Cold:
+              template(v-if="item.hasFever")
                 br
-                | Notes: {{ item.notes }}
+                | Temp: {{ item.temperature }}°C,
                 br
+              | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
+              br
 
-              template(v-else-if="item.sicknessType === 'ear_infection'")
-                | Ear Infection:
-                template(v-if="item.hasFever")
-                  | Temp: {{ item.temperature }}°C,
-                | Ear: {{ item.ear }}
+            template(v-else-if="item.sicknessType === 'ear_infection'")
+              | Ear Infection:
+              br
+              template(v-if="item.hasFever")
+                | Temp: {{ item.temperature }}°C,
                 br
-                | Notes: {{ item.notes }}
-                br
+              | Ear(s): {{ item.ear }}
+              br
 
-              template(v-else-if="item.sicknessType === 'influenza'")
-                | Influenza: Temp: {{ item.temperature }}°C, Vomiting: {{ item.vomiting ? 'Yes' : 'No' }}, Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
-                br
-                | Notes: {{ item.notes }}
-                br
+            template(v-else-if="item.sicknessType === 'influenza'")
+              | Influenza: 
+              br
+              | Temp: {{ item.temperature }}°C,
+              br
+              | Vomiting: {{ item.vomiting ? 'Yes' : 'No' }}, 
+              br
+              |Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
+              br
 
-              template(v-else-if="item.sicknessType === 'vomiting'")
-                | Vomiting: Temp: {{ item.temperature }}°C
-                br
-                | Notes: {{ item.notes }}
-                br
+            template(v-else-if="item.sicknessType === 'vomiting'")
+              | Vomiting: Temp: {{ item.temperature }}°C
+              br
 
-              template(v-else-if="item.sicknessType === 'teething'")
-                | Teething:
-                template(v-if="item.hasFever")
-                  | Temp: {{ item.temperature }}°C,
-                | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }}, Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }}, Gassy: {{ item.gassy ? 'Yes' : 'No' }}
+            template(v-else-if="item.sicknessType === 'teething'")
+              | Teething:
+              br
+              template(v-if="item.hasFever")
+                | Temp: {{ item.temperature }}°C,
                 br
-                | Notes: {{ item.notes }}
-                br
+              | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }}, 
+              br
+              |Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }}, 
+              br
+              | Gassy: {{ item.gassy ? 'Yes' : 'No' }}
+              br
 
-              template(v-else-if="item.sicknessType === 'other'")
-                | Other Sickness
-                br
-                | Notes: {{ item.notes }}
-                br
+            template(v-else-if="item.sicknessType === 'other'")
+              | Other Sickness
+              br
 
-              | {{ formatFeedingTime(item) }}
+            // Medicine Given Time
+            template(v-if="item.hadMedicine")
+              | Medicine Given at: {{ item.medicineTime }}
+              br
 
-          v-list-item-action
+            | Notes: {{ item.notes }}
+            br
+
+            | {{ formatFeedingTime(item) }}
+
+          template(#append)
             v-btn(icon @click="editSickness(item)" color="primary")
               v-icon mdi-pencil
             v-btn(icon color="error" @click="deleteSicknessItem(item)")
@@ -117,7 +127,6 @@ const allSicknesses = ref([]);
 const showSicknessDialog = ref(false);
 const editSicknessData = ref(null);
 
-// Snackbar states
 const snackbarShow = ref(false);
 const snackbarMessage = ref("");
 const snackbarColor = ref("success");
@@ -235,3 +244,6 @@ function formatFeedingTime(feeding) {
   return "";
 }
 </script>
+
+<style scoped>
+</style>

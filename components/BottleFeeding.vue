@@ -1,7 +1,7 @@
 <template lang="pug">
   v-dialog(v-model="localShow" persistent max-width="400")
     v-card
-      v-card-title Bottle Feeding {{feeding.toTime}}
+      v-card-title Bottle Feeding
       v-card-text
         h3 Bottle Volume (ml)
         v-select(v-model="feeding.volume" :items="bottleVolumeItems" label="Volume" outlined)

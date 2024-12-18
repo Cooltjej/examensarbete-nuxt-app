@@ -1,3 +1,4 @@
+<!-- components/SicknessDialog.vue -->
 <template lang="pug">
   v-dialog(v-model="localShow" persistent max-width="500")
     v-card
@@ -46,18 +47,17 @@
                 outlined
               )
 
-        // Fever-specific medicine option
-        template(v-if="sickness.sicknessType === 'fever'")
-          h3
-            v-checkbox(v-model="hadMedicine" label="Had medicine?")
-          template(v-if="hadMedicine")
-            h3 Medicine Given Time
-            v-text-field(
-              v-model="medicineTime"
-              label="Medicine Time"
-              type="time"
-              outlined
-            )
+        // Medicine option available for all sickness types
+        h3
+          v-checkbox(v-model="hadMedicine" label="Had medicine?")
+        template(v-if="hadMedicine")
+          h3 Medicine Given Time
+          v-text-field(
+            v-model="medicineTime"
+            label="Medicine Time"
+            type="time"
+            outlined
+          )
 
         // Additional fields based on sickness type
         template(v-if="sickness.sicknessType === 'common_cold'")
@@ -106,12 +106,13 @@
         v-btn(@click="saveSickness" color="primary") Save
         v-btn(@click="cancel" color="secondary") Cancel
 
-    snackbar-message(
-      :message="snackbarMessage"
-      :color="snackbarColor"
-      :show="snackbarShow"
-      @update:show="snackbarShow = $event"
-    )
+  // Snackbar for messages
+  snackbar-message(
+    :message="snackbarMessage"
+    :color="snackbarColor"
+    :show="snackbarShow"
+    @update:show="snackbarShow = $event"
+  )
 </template>
 
 <script setup>
@@ -127,15 +128,17 @@ const props = defineProps({
 
 const emits = defineEmits(["closed", "refresh"]);
 
+// Define the sickness model
 const sickness = defineModel("sickness", {
   default: {
+    id: null, 
     sicknessType: null,
     notes: "",
     fromTime: "12:00",
     toTime: "12:00",
     timingChoice: "currentTime",
     timeOfDay: "morning",
-    // Optional fields based on sickness type
+  
     runnyNose: false,
     ear: "both",
     vomiting: false,
@@ -143,54 +146,34 @@ const sickness = defineModel("sickness", {
     stomachache: false,
     fussySleep: false,
     gassy: false,
-    hasFever: "false",
+    hasFever: "false", 
     hadMedicine: false,
     medicineTime: "12:00",
+    temperature: null, 
   },
 });
 
 const childStore = useChildStore();
 const localShow = ref(props.show);
 
-watch(
-  () => props.show,
-  (val) => {
-    localShow.value = val;
-    if (val) {
-      parseTemperature();
-      checkHasFeverRadio();
-      checkMedicineForFever();
-    }
-  }
-);
-
-watch(localShow, (val) => {
-  if (!val) emits("closed");
-});
 
 const snackbarShow = ref(false);
 const snackbarMessage = ref("");
 const snackbarColor = ref("success");
 
-function showSnackbar(msg, color = "success") {
-  snackbarMessage.value = msg;
-  snackbarColor.value = color;
-  snackbarShow.value = true;
-}
 
-// Temperature logic
+const hadMedicine = ref(false);
+const medicineTime = ref("12:00");
+
 const wholeTemps = Array.from({ length: 7 }, (_, i) => 35 + i); // 35 to 41
 const decimalTemps = Array.from({ length: 10 }, (_, i) => i); // 0 to 9
 
 const tempWhole = ref(null);
 const tempDecimal = ref(null);
 
-// For conditions that have optional fever:
 const hasFever = ref("false"); // Default to 'false'
-const hadMedicine = ref(false);
-const medicineTime = ref("12:00");
 
-// Computed properties to determine sickness type categories
+
 const isConditionalFeverType = computed(() =>
   ["common_cold", "ear_infection", "teething"].includes(
     sickness.value.sicknessType
@@ -200,8 +183,30 @@ const isAlwaysTempType = computed(() =>
   ["fever", "influenza", "vomiting"].includes(sickness.value.sicknessType)
 );
 
+
+watch(
+  () => props.show,
+  (val) => {
+    localShow.value = val;
+    if (val) {
+      initializeForm();
+    }
+  }
+);
+
+
+watch(localShow, (val) => {
+  if (!val) emits("closed");
+});
+
+function initializeForm() {
+  parseTemperature();
+  checkHasFeverRadio();
+  checkMedicineForAll();
+}
+
 function parseTemperature() {
-  // If editing an existing record with temperature:
+
   if (sickness.value.temperature) {
     const parts = sickness.value.temperature.split(".");
     tempWhole.value = parseInt(parts[0], 10);
@@ -213,8 +218,6 @@ function parseTemperature() {
 }
 
 function checkHasFeverRadio() {
-  // For 'common_cold', 'ear_infection', 'teething' check if temperature was previously set
-  // If sickness has a temperature, hasFever='true', else 'false'
   if (isConditionalFeverType.value) {
     if (sickness.value.temperature) {
       hasFever.value = "true";
@@ -224,16 +227,9 @@ function checkHasFeverRadio() {
   }
 }
 
-function checkMedicineForFever() {
-  if (sickness.value.sicknessType === "fever") {
-    if (sickness.value.hadMedicine) {
-      hadMedicine.value = true;
-      medicineTime.value = sickness.value.medicineTime || "12:00";
-    } else {
-      hadMedicine.value = false;
-      medicineTime.value = "12:00";
-    }
-  }
+function checkMedicineForAll() {
+  hadMedicine.value = sickness.value.hadMedicine || false;
+  medicineTime.value = sickness.value.medicineTime || "12:00";
 }
 
 function closeDialog() {
@@ -256,7 +252,6 @@ function buildSicknessData() {
     timestamp: new Date().toISOString(),
   };
 
-  // Define types that always require temperature and those that have optional temperature
   const typesAlwaysTemp = ["fever", "influenza", "vomiting"];
   const typesOptionalTemp = ["common_cold", "ear_infection", "teething"];
 
@@ -267,7 +262,7 @@ function buildSicknessData() {
     }
     data.temperature = `${tempWhole.value}.${tempDecimal.value}`;
   } else if (typesOptionalTemp.includes(data.sicknessType)) {
-    if (hasFever.value === "true") {
+    if (isConditionalFeverType.value && hasFever.value === "true") {
       if (tempWhole.value === null || tempDecimal.value === null) {
         showSnackbar("Please select a temperature.", "error");
         return null;
@@ -276,11 +271,9 @@ function buildSicknessData() {
       data.hasFever = true;
     } else {
       data.hasFever = false;
-      // No temperature field in data
     }
   }
 
-  // Additional fields depending on type
   if (data.sicknessType === "common_cold") {
     data.runnyNose = !!sickness.value.runnyNose;
   }
@@ -297,23 +290,17 @@ function buildSicknessData() {
     data.gassy = !!sickness.value.gassy;
   }
 
-  if (data.sicknessType === "fever") {
-    data.hadMedicine = hadMedicine.value;
-    if (hadMedicine.value) {
-      data.medicineTime = medicineTime.value;
-    }
+  // Medicine option for all sickness types
+  data.hadMedicine = hadMedicine.value;
+  if (hadMedicine.value) {
+    data.medicineTime = medicineTime.value;
   }
 
   // Time logic
   if (sickness.value.timingChoice === "specificTime") {
     const startDate = parseTimeToDate(sickness.value.fromTime);
     data.fromTime = sickness.value.fromTime;
-    // For fever, ignoring toTime
-    if (data.sicknessType === "fever") {
-      data.toTime = null;
-    } else {
-      data.toTime = sickness.value.toTime;
-    }
+    data.toTime = sickness.value.toTime;
     data.timestamp = startDate.toISOString();
     data.timeOfDay = null;
   } else if (sickness.value.timingChoice === "timeOfDay") {
@@ -372,8 +359,13 @@ async function saveSickness() {
 function cancel() {
   closeDialog();
 }
+
+function showSnackbar(msg, color = "success") {
+  snackbarMessage.value = msg;
+  snackbarColor.value = color;
+  snackbarShow.value = true;
+}
 </script>
 
 <style scoped>
-/* Optional: Add any component-specific styles here */
 </style>
