@@ -1,4 +1,4 @@
-// stores/useChild.js
+// stores/useChildStore.js
 import { defineStore } from 'pinia';
 import {
   getFirestore,
@@ -17,7 +17,7 @@ export const useChildStore = defineStore('child', () => {
   const db = getFirestore();
 
   // Reactive arrays for each logging category
-  const children = ref([]); // To store children if needed
+  const children = ref([]);
   const bowelMovements = ref([]);
   const sleepLogs = ref([]);
   const bottleFeedings = ref([]);
@@ -27,13 +27,12 @@ export const useChildStore = defineStore('child', () => {
 
   // Aggregated Loggings (Unified List)
   const aggregatedLoggings = computed(() => {
-    // Combine all loggings into a single array
     const allLoggings = [
       ...bowelMovements.value.map((log) => ({
         id: log.id,
         category: 'BowelMovement',
         subCategory: null,
-        start: formatDate(log.timestamp), // Vuetify expects 'start'
+        start: formatDate(log.timestamp),
         timestamp: log.timestamp,
         details: log,
       })),
@@ -79,7 +78,6 @@ export const useChildStore = defineStore('child', () => {
       })),
     ];
 
-    // Optionally, sort all loggings by timestamp
     allLoggings.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     return allLoggings;
@@ -111,25 +109,23 @@ export const useChildStore = defineStore('child', () => {
 
   // --- Bowel Movements Functions ---
 
-  async function addBowelMovementWithTime(childId, movementType, timeOfDay, times = 1) {
+  async function addBowelMovementWithTime(childId, movementType, timeOfDay) {
     const bowelMovementsRef = collection(doc(db, 'children', childId), 'bowelMovements');
     const newMovementRef = doc(bowelMovementsRef);
     await setDoc(newMovementRef, {
       movementType,
       timeOfDay,
-      times, // Number of times
       timestamp: new Date().toISOString(),
     });
   }
 
-  async function updateBowelMovementWithTime(childId, movementId, movementType, timeOfDay, times) {
+  async function updateBowelMovementWithTime(childId, movementId, movementType, timeOfDay) {
     const movementRef = doc(db, 'children', childId, 'bowelMovements', movementId);
     await setDoc(
       movementRef,
       {
         movementType,
         timeOfDay,
-        times,
       },
       { merge: true }
     );
@@ -141,39 +137,36 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Bowel Movements
-  function listenToBowelMovements(childId) {
+  function listenToBowelMovements(childId, callback) {
     const bowelMovementsRef = collection(doc(db, 'children', childId), 'bowelMovements');
     onSnapshot(bowelMovementsRef, (snapshot) => {
-      bowelMovements.value = snapshot.docs.map((doc) => ({
+      const movements = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(movements);
     });
   }
 
   // --- Sleep Logs Functions ---
 
-  async function addSleepLog(childId, fromTime, toTime, duration, quality) {
+  async function addSleepLog(childId, fromTime, toTime) {
     const sleepRef = collection(doc(db, 'children', childId), 'sleep');
     const newSleepRef = doc(sleepRef);
     await setDoc(newSleepRef, {
       fromTime,
       toTime,
-      duration, // in minutes
-      quality,
       timestamp: new Date().toISOString(),
     });
   }
 
-  async function updateSleepLog(childId, logId, fromTime, toTime, duration, quality) {
+  async function updateSleepLog(childId, logId, fromTime, toTime) {
     const sleepRef = doc(db, 'children', childId, 'sleep', logId);
     await setDoc(
       sleepRef,
       {
         fromTime,
         toTime,
-        duration,
-        quality,
       },
       { merge: true }
     );
@@ -185,13 +178,14 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Sleep Logs
-  function listenToSleepLogs(childId) {
+  function listenToSleepLogs(childId, callback) {
     const sleepRef = collection(doc(db, 'children', childId), 'sleep');
     onSnapshot(sleepRef, (snapshot) => {
-      sleepLogs.value = snapshot.docs.map((doc) => ({
+      const logs = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(logs);
     });
   }
 
@@ -218,13 +212,14 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Bottle Feedings
-  function listenToBottleFeedings(childId) {
+  function listenToBottleFeedings(childId, callback) {
     const bottleRef = collection(doc(db, 'children', childId), 'bottle');
     onSnapshot(bottleRef, (snapshot) => {
-      bottleFeedings.value = snapshot.docs.map((doc) => ({
+      const feedings = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(feedings);
     });
   }
 
@@ -250,13 +245,14 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Breastfeedings
-  function listenToBreastfeedings(childId) {
+  function listenToBreastfeedings(childId, callback) {
     const breastRef = collection(doc(db, 'children', childId), 'breastfeeding');
     onSnapshot(breastRef, (snapshot) => {
-      breastFeedings.value = snapshot.docs.map((doc) => ({
+      const feedings = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(feedings);
     });
   }
 
@@ -282,13 +278,14 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Solid Feedings
-  function listenToSolidfeedings(childId) {
+  function listenToSolidfeedings(childId, callback) {
     const solidRef = collection(doc(db, 'children', childId), 'solidfeeding');
     onSnapshot(solidRef, (snapshot) => {
       solidFeedings.value = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(solidFeedings.value);
     });
   }
 
@@ -314,13 +311,14 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to Sicknesses
-  function listenToSicknesses(childId) {
+  function listenToSicknesses(childId, callback) {
     const sicknessRef = collection(doc(db, 'children', childId), 'sickness');
     onSnapshot(sicknessRef, (snapshot) => {
       sicknesses.value = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      callback(sicknesses.value);
     });
   }
 
@@ -328,7 +326,7 @@ export const useChildStore = defineStore('child', () => {
 
   // Helper function to format ISO timestamp to YYYY-MM-DD
   function formatDate(timestamp) {
-    const date = newDate(timestamp);
+    const date = new Date(timestamp);
     if (isNaN(date)) {
       console.error('Invalid timestamp:', timestamp);
       return '';
@@ -340,7 +338,7 @@ export const useChildStore = defineStore('child', () => {
   }
 
   // Listen to all loggings for a child and aggregate them
-  function listenToAllLoggings(childId) {
+  function listenToAllLoggings(childId, callbacks) {
     // Initialize or reset all logging arrays
     bowelMovements.value = [];
     sleepLogs.value = [];
@@ -349,13 +347,48 @@ export const useChildStore = defineStore('child', () => {
     solidFeedings.value = [];
     sicknesses.value = [];
 
-    // Set up listeners for each logging category
-    listenToBowelMovements(childId);
-    listenToSleepLogs(childId);
-    listenToBottleFeedings(childId);
-    listenToBreastfeedings(childId);
-    listenToSolidfeedings(childId);
-    listenToSicknesses(childId);
+    // Set up listeners for each logging category with their respective callbacks
+    listenToBowelMovements(childId, (movements) => {
+      bowelMovements.value = movements;
+      if (callbacks && typeof callbacks.bowelMovements === 'function') {
+        callbacks.bowelMovements(movements);
+      }
+    });
+
+    listenToSleepLogs(childId, (logs) => {
+      sleepLogs.value = logs;
+      if (callbacks && typeof callbacks.sleepLogs === 'function') {
+        callbacks.sleepLogs(logs);
+      }
+    });
+
+    listenToBottleFeedings(childId, (feedings) => {
+      bottleFeedings.value = feedings;
+      if (callbacks && typeof callbacks.bottleFeedings === 'function') {
+        callbacks.bottleFeedings(feedings);
+      }
+    });
+
+    listenToBreastfeedings(childId, (feedings) => {
+      breastFeedings.value = feedings;
+      if (callbacks && typeof callbacks.breastfeedings === 'function') {
+        callbacks.breastfeedings(feedings);
+      }
+    });
+
+    listenToSolidfeedings(childId, (feedings) => {
+      solidFeedings.value = feedings;
+      if (callbacks && typeof callbacks.solidfeedings === 'function') {
+        callbacks.solidfeedings(feedings);
+      }
+    });
+
+    listenToSicknesses(childId, (sicknessesData) => {
+      sicknesses.value = sicknessesData;
+      if (callbacks && typeof callbacks.sicknesses === 'function') {
+        callbacks.sicknesses(sicknessesData);
+      }
+    });
   }
 
   // Return all functions and reactive states
