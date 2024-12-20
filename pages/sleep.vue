@@ -3,6 +3,7 @@
     v-row
       v-col(cols="12")
         h2 Sleep
+        v-btn(@click="openSleepPopup" color="primary") Add Sleep
         // Lista över sleep logs (5 senaste)
         v-list
           v-list-item(v-for="log in sleepLogs" :key="log.id")
@@ -13,7 +14,6 @@
               v-btn(icon color="error" @click="deleteSleepLog(log.id)")
                 v-icon mdi-delete
   
-        v-btn(@click="openSleepPopup" color="primary") Add Sleep
   
         // Popup för att välja FROM/TO tid
         v-dialog(v-model="showPopup" persistent max-width="400")

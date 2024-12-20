@@ -101,23 +101,38 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useChildStore } from '~/stores/useChildStore';
-import { useAuthStore } from '~/stores/useAuth'; // Import your auth store
-import Sparklines from '~/components/Sparklines.vue'; // Adjust the path as needed
+import { ref, computed, onMounted, watch } from "vue";
+import { useChildStore } from "~/stores/useChildStore";
+import { useAuthStore } from "~/stores/useAuth"; // Import your auth store
+import Sparklines from "~/components/Sparklines.vue"; // Adjust the path as needed
 
 // Define categories with display names and colors
 const categories = [
-  { name: 'Feeding', displayName: 'Feeding', color: 'green', icon: 'mdi-bottle-soda' },
-  { name: 'Sleep', displayName: 'Sleep', color: 'blue', icon: 'mdi-bed' },
-  { name: 'BowelMovement', displayName: 'Bowel Movement', color: 'orange', icon: 'mdi-toilet-paper' },
-  { name: 'Sickness', displayName: 'Sickness', color: 'red', icon: 'mdi-thermometer' },
+  {
+    name: "Feeding",
+    displayName: "Feeding",
+    color: "green",
+    icon: "mdi-bottle-soda",
+  },
+  { name: "Sleep", displayName: "Sleep", color: "blue", icon: "mdi-bed" },
+  {
+    name: "BowelMovement",
+    displayName: "Bowel Movement",
+    color: "orange",
+    icon: "mdi-toilet-paper",
+  },
+  {
+    name: "Sickness",
+    displayName: "Sickness",
+    color: "red",
+    icon: "mdi-thermometer",
+  },
 ];
 
 // Reactive state
 const childStore = useChildStore();
 const authStore = useAuthStore();
-const selectedCategory = ref('Feeding'); // Default selected category
+const selectedCategory = ref("Feeding"); // Default selected category
 const showDayDialog = ref(false);
 const selectedDay = ref(null);
 const loggingsForSelectedDay = ref([]);
@@ -135,14 +150,14 @@ const localSicknesses = ref([]);
 
 // Define getCategoryColor function
 function getCategoryColor(categoryName) {
-  const category = categories.find(c => c.name === categoryName);
-  return category ? category.color : 'grey';
+  const category = categories.find((c) => c.name === categoryName);
+  return category ? category.color : "grey";
 }
 
 // Define getCategoryIcon function
 function getCategoryIcon(categoryName) {
-  const category = categories.find(c => c.name === categoryName);
-  return category ? category.icon : 'mdi-information';
+  const category = categories.find((c) => c.name === categoryName);
+  return category ? category.icon : "mdi-information";
 }
 
 // Define selectCategory function
@@ -179,11 +194,11 @@ onMounted(() => {
           },
         });
       } else {
-        console.warn('No children found for the user.');
+        console.warn("No children found for the user.");
       }
     });
   } else {
-    console.warn('No authenticated user found.');
+    console.warn("No authenticated user found.");
   }
 });
 
@@ -193,7 +208,7 @@ watch(
   (newLoggings) => {
     newLoggings.forEach((logging) => {
       if (!logging.start) {
-        console.warn('Logging with missing start date:', logging);
+        console.warn("Logging with missing start date:", logging);
       }
     });
   }
@@ -215,16 +230,16 @@ const sparklineData = computed(() => {
       }
       // Customize the increment based on category details
       switch (logging.category) {
-        case 'Feeding':
+        case "Feeding":
           dataMap[date] += 1; // Modify as needed (e.g., volume)
           break;
-        case 'Sleep':
+        case "Sleep":
           dataMap[date] += 1; // Modify as needed (e.g., duration)
           break;
-        case 'BowelMovement':
+        case "BowelMovement":
           dataMap[date] += logging.details.times || 1;
           break;
-        case 'Sickness':
+        case "Sickness":
           dataMap[date] += 1; // Modify as needed
           break;
         default:
@@ -243,7 +258,7 @@ const sparklineData = computed(() => {
 // Selected category display name
 const selectedCategoryDisplay = computed(() => {
   const category = categories.find((c) => c.name === selectedCategory.value);
-  return category ? category.displayName : 'Category';
+  return category ? category.displayName : "Category";
 });
 
 // Handle day click
@@ -265,12 +280,12 @@ function closeDayDetails() {
 // Format time for display
 function formatTime(timestamp) {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 // Format selected day
 const selectedDayFormatted = computed(() => {
-  if (!selectedDay.value) return '';
+  if (!selectedDay.value) return "";
   const date = new Date(selectedDay.value);
   return date.toLocaleDateString();
 });
