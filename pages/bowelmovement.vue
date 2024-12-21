@@ -6,7 +6,11 @@
       // List of bowel movements
       v-list
         v-list-item(v-for="movement in bowelMovements" :key="movement.id")
-          v-list-item-title {{ movement.formattedTimestamp }}: {{ movement.movementType }} ({{ movement.timeOfDay }})
+          v-list-item-title {{ movement.formattedTimestamp }}: 
+          
+          | {{ movement.movementType }} 
+          br
+          | ({{ movement.timeOfDay }})
           template(#append)
             v-btn(icon @click="editBowelMovement(movement)")
               v-icon mdi-pencil

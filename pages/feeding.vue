@@ -13,14 +13,16 @@
             | {{ formatDate(feeding.timestamp) }}
             br
             template(v-if="feeding.type === 'bottle'")
-              | Bottle feeding: {{ feeding.volume }}ml +{{ feeding.incrementVolume }}ml
+              | Bottle feeding: 
+              br 
+              | {{ feeding.volume }}ml +{{ feeding.incrementVolume }}ml
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
               br
               | {{ formatFeedingTime(feeding) }}
 
             template(v-else-if="feeding.type === 'breastfeeding'")
-              | Breastfeeding
+              | Breastfeeding:
               br
               | Breast: {{ feeding.breast }}
               br
@@ -30,7 +32,7 @@
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
 
             template(v-else-if="feeding.type === 'solidfeeding'")
-              | Solid Food
+              | Solid Food:
               br
               | Solid Type: {{ feeding.solidType }}
               br

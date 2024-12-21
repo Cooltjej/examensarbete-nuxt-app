@@ -7,7 +7,11 @@
         // Lista över sleep logs (5 senaste)
         v-list
           v-list-item(v-for="log in sleepLogs" :key="log.id")
-            v-list-item-title {{ formatDate(log.timestamp) }} Sleep from {{ log.fromTime }} to {{ log.toTime }}
+            v-list-item-title {{ formatDate(log.timestamp) }}
+            
+            | Sleep:
+            br
+            | from {{ log.fromTime }} to {{ log.toTime }}
             template(#append)
               v-btn(icon @click="editSleepLog(log)")
                 v-icon mdi-pencil
