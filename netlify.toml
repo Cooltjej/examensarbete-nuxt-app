@@ -1,8 +1,7 @@
 # netlify.toml
 [build]
-  command = "nuxi build"
-  publish = ".output/public"
-  functions = ".output/server/functions"
+  command = "nuxi generate"
+  publish = "dist"
 
 [[redirects]]
   from = "/api/*"
