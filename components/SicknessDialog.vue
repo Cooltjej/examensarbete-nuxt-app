@@ -175,12 +175,12 @@ const hasFever = ref("false"); // Default to 'false'
 
 
 const isConditionalFeverType = computed(() =>
-  ["common_cold", "ear_infection", "teething"].includes(
+  ["common_cold", "ear_infection", "teething", "vomiting"].includes(
     sickness.value.sicknessType
   )
 );
 const isAlwaysTempType = computed(() =>
-  ["fever", "influenza", "vomiting"].includes(sickness.value.sicknessType)
+  ["fever", "influenza"].includes(sickness.value.sicknessType)
 );
 
 
@@ -252,8 +252,8 @@ function buildSicknessData() {
     timestamp: new Date().toISOString(),
   };
 
-  const typesAlwaysTemp = ["fever", "influenza", "vomiting"];
-  const typesOptionalTemp = ["common_cold", "ear_infection", "teething"];
+  const typesAlwaysTemp = ["fever", "influenza"];
+  const typesOptionalTemp = ["common_cold", "ear_infection", "teething", "vomiting"];
 
   if (typesAlwaysTemp.includes(data.sicknessType)) {
     if (tempWhole.value === null || tempDecimal.value === null) {

@@ -13,6 +13,23 @@ components:{
 ...components, ...labsComponents
 },
 directives,
+theme: {
+  defaultTheme: 'light',
+  themes: {
+    light: {
+      colors: {
+        primary: '#1976D2',
+        // ... your light theme colors
+      },
+    },
+    dark: {
+      colors: {
+        primary: '#2196F3',
+        // ... your dark theme colors
+      },
+    },
+  },
+},
 
 ssr: true,
 aliases: {

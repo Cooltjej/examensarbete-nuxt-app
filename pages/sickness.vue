@@ -54,7 +54,9 @@
               br
 
             template(v-else-if="item.sicknessType === 'vomiting'")
-              | Vomiting: Temp: {{ item.temperature }}°C
+              | Vomiting: 
+              br
+              | Temp: {{ item.temperature }}°C
               br
 
             template(v-else-if="item.sicknessType === 'teething'")
@@ -164,7 +166,7 @@ function openSickness(sType) {
     ...(sType === "common_cold" && { runnyNose: false, hasFever: "false" }),
     ...(sType === "ear_infection" && { ear: "both", hasFever: "false" }),
     ...(sType === "influenza" && { vomiting: false, diarrhea: false }),
-    ...(sType === "vomiting" && {}),
+    ...(sType === "vomiting" && { hasFever: true }), // Default "hasFever" for vomiting
     ...(sType === "teething" && {
       stomachache: false,
       fussySleep: false,

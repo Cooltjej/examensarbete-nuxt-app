@@ -5,7 +5,6 @@
         h1 Welcome!
         div You are signed in with:
         div Email: {{ auth.user.email }}
-        div Uid: {{ auth.user.uid }}
         br
         // Här har du redan ChildInfo i koden, men vi antar att du använder den fortfarande
         child-info
