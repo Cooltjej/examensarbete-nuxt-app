@@ -47,7 +47,7 @@
           template(#append)
             v-btn(icon @click="editFeeding(feeding)")
               v-icon mdi-pencil
-            v-btn(icon color="error" @click="deleteFeeding(feeding)")
+            v-btn(icon color="red-darken-2" @click="deleteFeeding(feeding)")
               v-icon mdi-delete
 
       // Komponenter för popups

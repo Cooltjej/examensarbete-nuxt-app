@@ -12,7 +12,20 @@ export default defineNuxtConfig({
     transpile: ["vuetify"],
   },
 
-  modules: ["@pinia/nuxt", "@pinia-plugin-persistedstate/nuxt"],
+  modules: [
+    "@pinia/nuxt",
+    "@pinia-plugin-persistedstate/nuxt",
+    [
+      "@nuxtjs/google-fonts",
+      {
+        families: {
+          Quicksand: [300, 400, 500, 600, 700],
+        },
+        display: "swap",
+        preload: true,
+      },
+    ],
+  ],
 
   runtimeConfig: {
     public: {
@@ -44,5 +57,11 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: "2024-11-27",
 
-  css: ["@/assets/custom.sass", "vuetify/lib/styles/main.sass"],
+  css: [
+    "@/assets/custom.sass",
+    "vuetify/lib/styles/main.sass",
+    "@mdi/font/css/materialdesignicons.min.css",
+    "@/assets/font.scss",
+    "@/assets/global.scss",
+  ],
 });

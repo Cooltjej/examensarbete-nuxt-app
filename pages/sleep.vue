@@ -18,7 +18,7 @@
             template(#append)
               v-btn(icon @click="editSleepLog(log)")
                 v-icon mdi-pencil
-              v-btn(icon color="error" @click="deleteSleepLog(log.id)")
+              v-btn(icon color="red-darken-2" @click="deleteSleepLog(log.id)")
                 v-icon mdi-delete
   
   

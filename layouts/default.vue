@@ -6,20 +6,21 @@
       v-model="drawer"
       app
       clipped
-      color="grey lighten-4"
+      color="orange-darken-4"
       border="sm"
       temporary
       class="d-lg-none"
+      side="end" 
     )
       v-list
         v-list-item(
           v-for="(link, i) in navLinks"
-          :key="i"
+          :key="link.to" 
           link
           :to="link.to"
         )
           v-list-item-title {{ link.title }}
-
+  
     v-main
       NuxtPage
 </template>

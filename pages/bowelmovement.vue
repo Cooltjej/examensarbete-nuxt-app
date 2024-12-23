@@ -17,7 +17,7 @@
           template(#append)
             v-btn(icon @click="editBowelMovement(movement)")
               v-icon mdi-pencil
-            v-btn(icon color="error" @click="deleteBowelMovement(movement.id)")
+            v-btn(icon color="red-darken-2" @click="deleteBowelMovement(movement.id)")
               v-icon mdi-delete
 
 

@@ -1,27 +1,36 @@
 <!-- components/Navbar.vue -->
 <template lang="pug">
   v-app-bar(
-    color="primary"
+    color="orange-darken-1"
     dark
     app
     height="64"
     elevation="4"
   )
-    // Hamburger menu (hidden on lg and larger)
-    v-app-bar-nav-icon(
-      class="d-lg-none"
-      @click="toggleDrawer"
-    )
+    // Left Section: User Avatar with Dropdown and Application Title
+    div.d-flex.align-center
+      // User Avatar with Dropdown
+      v-menu(bottom right)
+        template(#activator="{ props }")
+          span.mx-3(
+            v-bind="props"
+            class="cursor-pointer mr-2"
+            aria-label="User Menu"
+          ) {{ userNamePart }}
+        v-list
+          v-list-item(@click="signOut")
+            v-list-item-title Logout
 
-    // Application Title
-    v-toolbar-title Baby Tracker
+      // Application Title
+      v-toolbar-title Baby Tracker
 
+    // Spacer to push the following elements to the right
     v-spacer
 
     // Navigation Links (only visible on lg and larger screens)
     NuxtLink(
-      v-for="(link, index) in navLinks"
-      :key="index"
+      v-for="link in navLinks"
+      :key="link.to" 
       :to="link.to"
       custom
       v-slot="{ navigate, isActive }"
@@ -30,36 +39,47 @@
         text
         @click="navigate"
         :class="['d-none d-lg-inline', { 'btn-active': isActive }]"
+        aria-label="Navigation Link"
       )
         | {{ link.title }}
 
-    // Theme Toggle Button
-    v-btn(text @click="toggleTheme") Toggle Theme
+    // Theme Toggle Button with Dynamic Icon and Tooltip
+    v-tooltip(top)
+      template(#activator="{ props }")
+        v-btn(
+          icon
+          @click="toggleTheme"
+          class="ml-2"
+          v-bind="props"
+          aria-label="Toggle Theme"
+        )
+          v-icon {{ themeIcon }}
+      span Toggle Theme
 
-    // Append Slot: User Avatar with Dropdown
-    template(#append)
-      v-menu(bottom right)
-        template(#activator="{ props }")
-          // Display only the first part of the email
-          span(v-bind="props" class="cursor-pointer") {{ userNamePart }}
-        v-list
-          v-list-item(@click="signOut")
-            v-list-item-title Logout
+    // Hamburger menu (hidden on lg and larger)
+    v-app-bar-nav-icon(
+      class="d-lg-none ml-2"
+      @click="toggleDrawer"
+      aria-label="Open Navigation Drawer"
+    )
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { defineProps } from 'vue';
-import { useAuthStore } from '~/stores/useAuth';
-import { useRouter } from 'vue-router';
-import { useTheme } from 'vuetify'; // Import the theme composable
+import { computed } from "vue";
+import { defineProps } from "vue";
+import { useAuthStore } from "~/stores/useAuth";
+import { useRouter } from "vue-router";
+import { useTheme } from "vuetify";
 
 const auth = useAuthStore();
 const router = useRouter();
+
+// Compute the first part of the user's email
 const userNamePart = computed(() => {
-  if (!auth.user || !auth.user.email) return '';
-  return auth.user.email.split('@')[0];
+  if (!auth.user || !auth.user.email) return "";
+  return auth.user.email.split("@")[0];
 });
+
 const props = defineProps({
   toggleDrawer: {
     type: Function,
@@ -95,11 +115,17 @@ async function signOut() {
 // Use Vuetify's theme composable
 const theme = useTheme();
 
+// Compute the icon based on the current theme
+const themeIcon = computed(() => {
+  return theme.global.name.value === "light"
+    ? "mdi-weather-night" // Moon icon for dark mode
+    : "mdi-weather-sunny"; // Sun icon for light mode
+});
+
 function toggleTheme() {
-  // Get current theme name
-  const current = theme.global.name.value;
-  // Switch between 'light' and 'dark'
-  theme.global.name.value = current === 'light' ? 'dark' : 'light';
+  // Switch between 'light' and 'dark' themes
+  theme.global.name.value =
+    theme.global.name.value === "light" ? "dark" : "light";
 }
 </script>
 
@@ -110,5 +136,18 @@ function toggleTheme() {
 }
 .cursor-pointer {
   cursor: pointer;
+  transition: color 0.3s;
+}
+
+.cursor-pointer:hover {
+  color: lighten(#ffffff, 20%); /* Adjust based on your theme */
+}
+
+.mr-2 {
+  margin-right: 0.5rem; /* Adjust as needed */
+}
+
+.ml-2 {
+  margin-left: 0.5rem; /* Adjust as needed */
 }
 </style>

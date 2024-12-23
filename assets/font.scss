@@ -1,0 +1,13 @@
+// assets/font.scss
+
+// Quicksand Font Classes
+.quicksand {
+  font-family: 'Quicksand', sans-serif;
+  font-optical-sizing: auto;
+}
+
+.quicksand-light { @extend .quicksand; font-weight: 300; }
+.quicksand-regular { @extend .quicksand; font-weight: 400; }
+.quicksand-medium { @extend .quicksand; font-weight: 500; }
+.quicksand-semibold { @extend .quicksand; font-weight: 600; }
+.quicksand-bold { @extend .quicksand; font-weight: 700; }

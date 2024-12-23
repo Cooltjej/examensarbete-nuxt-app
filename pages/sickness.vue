@@ -2,98 +2,74 @@
 <template lang="pug">
   v-container
     h2.h2 Sickness Log
+
     div(v-if="childId")
       h3.h3.mb-3 Add New Sickness Record
-      v-btn(@click="openSickness('fever')" color="purple-lighten-1" rounded="xl") Fever
-      v-btn(@click="openSickness('common_cold')" color="purple-lighten-1" rounded="xl") Common Cold
-      v-btn(@click="openSickness('ear_infection')" color="purple-lighten-1" rounded="xl") Ear Infection
-      v-btn(@click="openSickness('influenza')" color="purple-lighten-1" rounded="xl") Influenza
-      v-btn(@click="openSickness('vomiting')" color="purple-lighten-1" rounded="xl") Vomiting
-      v-btn(@click="openSickness('teething')" color="purple-lighten-1" rounded="xl") Teething
-      v-btn(@click="openSickness('other')" color="purple-lighten-1" rounded="xl") Other
+      v-btn(
+        v-for="type in sicknessTypes"
+        :key="type"
+        @click="openSickness(type)"
+        color="purple lighten-1"
+        rounded="xl"
+      )
+        | {{ formatSicknessType(type) }}
+      
+      h3.h3.mt-6 Latest Sickness Logs
+      
+      div(v-if="Object.keys(groupedSicknesses).length > 0")
+        v-card(v-for="(group, date) in groupedSicknesses" :key="date" class="mb-4")
+          v-card-title {{ formatDate(date) }}
+          v-card-text
+            v-list
+              v-list-item(v-for="item in group" :key="item.id")
+                v-list-item-title
+                  span {{ formatSicknessType(item.sicknessType) }}:
+                    br
+                    template(v-if="item.sicknessType === 'fever'")
+                      | Temp: {{ item.temperature }}°C
+                    template(v-else-if="item.sicknessType === 'common_cold'")
+                      | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
+                      br
+                      | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
+                    template(v-else-if="item.sicknessType === 'ear_infection'")
+                      | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
+                      br
+                      | Ear(s): {{ item.ear }}
+                    template(v-else-if="item.sicknessType === 'influenza'")
+                      | Temp: {{ item.temperature }}°C,
+                      br
+                      | Vomiting: {{ item.vomiting ? 'Yes' : 'No' }},
+                      br
+                      | Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
+                    template(v-else-if="item.sicknessType === 'vomiting'")
+                      | Temp: {{ item.temperature }}°C
+                    template(v-else-if="item.sicknessType === 'teething'")
+                      | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }},
+                      br
+                      | Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }},
+                      br
+                      | Gassy: {{ item.gassy ? 'Yes' : 'No' }}
+                    template(v-else-if="item.sicknessType === 'other'")
+                      | Other Sickness
+                    br
+                    template(v-if="item.hadMedicine")
+                      | Medicine Given at: {{ item.medicineTime }}
+                    template(v-else)
+                      | Medicine Given at: No medicine given
+                    br
+                    | Notes: {{ item.notes || 'No notes' }}
+                  v-list-item-subtitle {{ formatTime(item) }}
+                  
+                template(#append)
+                  v-btn.mb-3(icon @click="editSickness(item)" color="blue-lighten-1" small aria-label="Edit Sickness")
+                    v-icon mdi-pencil
+                  v-btn.mb-3(icon @click="deleteSicknessItem(item)" color="red-darken-1" small aria-label="Delete Sickness")
+                    v-icon mdi-delete
 
-      h3.h3 Latest Sickness Logs
-      v-list
-        v-list-item(v-for="item in allSicknesses" :key="item.id")
-          v-list-item-title
-            span.font-weight-bold {{ formatDate(item.timestamp) }}
-            br
-            // Sickness type specific fields
-            template(v-if="item.sicknessType === 'fever'")
-              span.text-decoration-underline Fever: 
-              br
-              |Temp: {{ item.temperature }}°C
-              br
-
-            template(v-else-if="item.sicknessType === 'common_cold'")
-              span.text-decoration-underline Common Cold:
-              
-              template(v-if="item.hasFever")
-                br
-                | Temp: {{ item.temperature }}°C,
-                br
-                | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
-              br
-
-            template(v-else-if="item.sicknessType === 'ear_infection'")
-              span.text-decoration-underline Ear Infection:
-              br
-              template(v-if="item.hasFever")
-                | Temp: {{ item.temperature }}°C,
-                br
-              | Ear(s): {{ item.ear }}
-              br
-
-            template(v-else-if="item.sicknessType === 'influenza'")
-              span.text-decoration-underline Influenza: 
-              br
-              | Temp: {{ item.temperature }}°C,
-              br
-              | Vomiting: {{ item.vomiting ? 'Yes' : 'No' }}, 
-              br
-              |Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
-              br
-
-            template(v-else-if="item.sicknessType === 'vomiting'")
-              span.text-decoration-underline Vomiting: 
-              br
-              | Temp: {{ item.temperature }}°C
-              br
-
-            template(v-else-if="item.sicknessType === 'teething'")
-              span.text-decoration-underline Teething:
-              br
-              template(v-if="item.hasFever")
-                | Temp: {{ item.temperature }}°C,
-                br
-              | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }}, 
-              br
-              |Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }}, 
-              br
-              | Gassy: {{ item.gassy ? 'Yes' : 'No' }}
-              br
-
-            template(v-else-if="item.sicknessType === 'other'")
-              | Other Sickness
-              br
-
-            // Medicine Given Time
-            template(v-if="item.hadMedicine")
-              | Medicine Given at: {{ item.medicineTime }}
-              br
-
-            | Notes: {{ item.notes }}
-            br
-
-            | {{ formatTime(item) }}
-
-          template(#append)
-            v-btn(icon @click="editSickness(item)" color="primary")
-              v-icon mdi-pencil
-            v-btn(icon color="error" @click="deleteSicknessItem(item)")
-              v-icon mdi-delete
-
-      sickness-dialog(
+      div(v-else)
+        p No sickness records found.
+    
+      SicknessDialog(
         v-if="showSicknessDialog"
         :child-id="childId"
         :show="showSicknessDialog"
@@ -101,21 +77,19 @@
         @closed="closeSicknessDialog"
         @refresh="handleRefresh($event)"
       )
-
-    div(v-else)
-      | Loading or no child found...
-
-    // Snackbar for messages
-    snackbar-message(
-      :message="snackbarMessage"
-      :color="snackbarColor"
-      :show="snackbarShow"
-      @update:show="snackbarShow = $event"
-    )
+      
+      SnackbarMessage(
+        :message="snackbarMessage"
+        :color="snackbarColor"
+        :show="snackbarShow"
+        @update:show="snackbarShow = $event"
+      )
+    
+    div(v-else) Loading or no child found...
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "~/stores/useAuth";
 import { useChildStore } from "~/stores/useChildStore";
 import SicknessDialog from "~/components/SicknessDialog.vue";
@@ -149,11 +123,46 @@ onMounted(async () => {
         (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
       );
       allSicknesses.value = sicknessList.slice(0, 15);
+      console.log("All Sicknesses:", allSicknesses.value);
     });
   } else {
     console.error("No child found.");
   }
 });
+
+const sicknessTypes = [
+  "fever",
+  "common_cold",
+  "ear_infection",
+  "influenza",
+  "vomiting",
+  "teething",
+  "other",
+];
+
+const groupedSicknesses = computed(() => {
+  const groups = {};
+  allSicknesses.value.forEach((item) => {
+    if (!item.timestamp) {
+      console.warn("Missing timestamp for item:", item);
+      return;
+    }
+    const date = new Date(item.timestamp).toISOString().split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(item);
+  });
+  console.log("Grouped Sicknesses:", groups);
+  return groups;
+});
+
+function formatSicknessType(type) {
+  return type
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 function openSickness(sType) {
   editSicknessData.value = {
@@ -163,16 +172,15 @@ function openSickness(sType) {
     toTime: "12:00",
     timingChoice: "currentTime",
     timeOfDay: "morning",
-    // Initialize optional fields based on type
-    ...(sType === "common_cold" && { runnyNose: false, hasFever: "false" }),
-    ...(sType === "ear_infection" && { ear: "both", hasFever: "false" }),
+    ...(sType === "common_cold" && { runnyNose: false, hasFever: false }),
+    ...(sType === "ear_infection" && { ear: "both", hasFever: false }),
     ...(sType === "influenza" && { vomiting: false, diarrhea: false }),
-    ...(sType === "vomiting" && { hasFever: true }), // Default "hasFever" for vomiting
+    ...(sType === "vomiting" && { hasFever: true }),
     ...(sType === "teething" && {
       stomachache: false,
       fussySleep: false,
       gassy: false,
-      hasFever: "false",
+      hasFever: false,
     }),
     ...(sType === "fever" && { hadMedicine: false, medicineTime: "12:00" }),
     ...(sType === "other" && {}),
@@ -215,8 +223,9 @@ function showSnackbar(msg, color = "success") {
   snackbarShow.value = true;
 }
 
-function formatDate(date) {
-  const d = new Date(date);
+function formatDate(dateString) {
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "Invalid Date";
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = String(d.getFullYear()).slice(-2);
@@ -224,7 +233,6 @@ function formatDate(date) {
 }
 
 function formatTime(entry) {
-  // Renamed parameter from 'feeding' to 'entry' for generality
   if (
     entry.type === "bottle" ||
     entry.type === "breastfeeding" ||
@@ -249,4 +257,25 @@ function formatTime(entry) {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn-active {
+  font-weight: bold;
+  border-bottom: 2px solid white;
+}
+.cursor-pointer {
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.cursor-pointer:hover {
+  color: lighten(#ffffff, 20%);
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+</style>
