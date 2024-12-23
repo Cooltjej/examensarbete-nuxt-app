@@ -19,7 +19,7 @@
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
               br
-              | {{ formatFeedingTime(feeding) }}
+              | {{ formatTime(feeding) }}
 
             template(v-else-if="feeding.type === 'breastfeeding'")
               | Breastfeeding:
@@ -27,7 +27,7 @@
               | Breast: {{ feeding.breast }}
               br
               // istället för From ... to ...
-              | {{ formatFeedingTime(feeding) }}
+              | {{ formatTime(feeding) }}
               br
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
 
@@ -38,7 +38,7 @@
               br
               | Amount: {{ feeding.amount }}
               br
-              | {{ formatFeedingTime(feeding) }}
+              | {{ formatTime(feeding) }}
               br
               
 
@@ -107,7 +107,6 @@ const showBottle = ref(false);
 const showBreast = ref(false);
 const showSolid = ref(false);
 
-
 // Hantera vilken feeding vi redigerar
 const editFeedingData = ref(null);
 
@@ -158,7 +157,7 @@ function openBottle() {
     toTime: "12:00",
     timingChoice: "currentTime",
     timeOfDay: "morning",
-    babyBurp: false
+    babyBurp: false,
   }; // Ny feeding
   showBottle.value = true;
 }
@@ -171,7 +170,7 @@ function openBreast() {
     toTime: "12:00",
     timingChoice: "currentTime",
     timeOfDay: "morning",
-    babyBurp: false
+    babyBurp: false,
   };
   showBreast.value = true;
 }
@@ -280,22 +279,27 @@ function formatDate(date) {
   return `${day}/${month}-${year}`;
 }
 
-function formatFeedingTime(feeding) {
-  // Include solidfeeding in the condition
-  if (feeding.type === "bottle" || feeding.type === "breastfeeding" || feeding.type === "solidfeeding") {
-    if (feeding.timingChoice === "currentTime") {
-      return new Date(feeding.timestamp).toLocaleTimeString("sv-SE", {
+function formatTime(entry) {
+  // Renamed parameter from 'feeding' to 'entry' for generality
+  if (
+    entry.type === "bottle" ||
+    entry.type === "breastfeeding" ||
+    entry.type === "solidfeeding" ||
+    entry.type === "sickness"
+  ) {
+    if (entry.timingChoice === "currentTime") {
+      return new Date(entry.timestamp).toLocaleTimeString("sv-SE", {
         hour: "2-digit",
         minute: "2-digit",
       });
-    } else if (feeding.timingChoice === "specificTime") {
-      const d = formatDate(feeding.timestamp);
-      return `${d} ${feeding.fromTime} - ${feeding.toTime}`;
-    } else if (feeding.timingChoice === "timeOfDay") {
-      const d = formatDate(feeding.timestamp);
-      return `${d} ${feeding.timeOfDay}`;
+    } else if (entry.timingChoice === "specificTime") {
+      const d = formatDate(entry.timestamp);
+      return `${d} ${entry.fromTime} - ${entry.toTime}`;
+    } else if (entry.timingChoice === "timeOfDay") {
+      const d = formatDate(entry.timestamp);
+      return `${d} ${entry.timeOfDay}`;
     }
-    return formatDate(feeding.timestamp);
+    return formatDate(entry.timestamp);
   }
   return "";
 }

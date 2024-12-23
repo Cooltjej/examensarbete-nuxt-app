@@ -131,14 +131,14 @@ const emits = defineEmits(["closed", "refresh"]);
 // Define the sickness model
 const sickness = defineModel("sickness", {
   default: {
-    id: null, 
+    id: null,
     sicknessType: null,
     notes: "",
     fromTime: "12:00",
     toTime: "12:00",
     timingChoice: "currentTime",
     timeOfDay: "morning",
-  
+
     runnyNose: false,
     ear: "both",
     vomiting: false,
@@ -146,21 +146,19 @@ const sickness = defineModel("sickness", {
     stomachache: false,
     fussySleep: false,
     gassy: false,
-    hasFever: "false", 
+    hasFever: "false",
     hadMedicine: false,
     medicineTime: "12:00",
-    temperature: null, 
+    temperature: null,
   },
 });
 
 const childStore = useChildStore();
 const localShow = ref(props.show);
 
-
 const snackbarShow = ref(false);
 const snackbarMessage = ref("");
 const snackbarColor = ref("success");
-
 
 const hadMedicine = ref(false);
 const medicineTime = ref("12:00");
@@ -173,7 +171,6 @@ const tempDecimal = ref(null);
 
 const hasFever = ref("false"); // Default to 'false'
 
-
 const isConditionalFeverType = computed(() =>
   ["common_cold", "ear_infection", "teething", "vomiting"].includes(
     sickness.value.sicknessType
@@ -182,7 +179,6 @@ const isConditionalFeverType = computed(() =>
 const isAlwaysTempType = computed(() =>
   ["fever", "influenza"].includes(sickness.value.sicknessType)
 );
-
 
 watch(
   () => props.show,
@@ -193,7 +189,6 @@ watch(
     }
   }
 );
-
 
 watch(localShow, (val) => {
   if (!val) emits("closed");
@@ -206,7 +201,6 @@ function initializeForm() {
 }
 
 function parseTemperature() {
-
   if (sickness.value.temperature) {
     const parts = sickness.value.temperature.split(".");
     tempWhole.value = parseInt(parts[0], 10);
@@ -253,7 +247,12 @@ function buildSicknessData() {
   };
 
   const typesAlwaysTemp = ["fever", "influenza"];
-  const typesOptionalTemp = ["common_cold", "ear_infection", "teething", "vomiting"];
+  const typesOptionalTemp = [
+    "common_cold",
+    "ear_infection",
+    "teething",
+    "vomiting",
+  ];
 
   if (typesAlwaysTemp.includes(data.sicknessType)) {
     if (tempWhole.value === null || tempDecimal.value === null) {
@@ -367,5 +366,4 @@ function showSnackbar(msg, color = "success") {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

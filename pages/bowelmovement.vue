@@ -81,9 +81,9 @@ const timeOfDayItems = [
 const movementType = ref(null);
 
 const movementCategories = [
-  { name: "small movement", displayName: "Small Movement", color: "green" },
-  { name: "large movement", displayName: "Large Movement", color: "red" },
-  { name: "no movement", displayName: "No Movement", color: "grey" },
+  { name: "small movement", displayName: "Small Movement", color: "orange" },
+  { name: "large movement", displayName: "Large Movement", color: "orange" },
+  { name: "no movement", displayName: "No Movement", color: "orange" },
 ];
 
 function openBowelMovementPopup() {

@@ -33,8 +33,7 @@
 
       v-card-text.pt-0
         div.text-h6.font-weight-light.mb-2 Past 7 Days ({{ selectedCategoryDisplay }})
-        div.subheading.font-weight-light.text-grey
-          | Total log count per day
+        
         v-divider.my-2
         v-icon.me-2(size="small") mdi-clock
         span.text-caption.text-grey.font-weight-light Last 7 days + today
@@ -153,24 +152,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { format } from 'date-fns';
-import { useChildStore } from '~/stores/useChildStore';
-import { useAuthStore } from '~/stores/useAuth';
-import Sparklines from '~/components/Sparklines.vue';
+import { ref, computed, onMounted, watch } from "vue";
+import { format } from "date-fns";
+import { useChildStore } from "~/stores/useChildStore";
+import { useAuthStore } from "~/stores/useAuth";
+import Sparklines from "~/components/Sparklines.vue";
 
 // Categories
 const categories = [
-  { name: 'Feeding', displayName: 'Feeding', color: 'green' },
-  { name: 'Sleep', displayName: 'Sleep', color: 'blue' },
-  { name: 'BowelMovement', displayName: 'Bowel Movement', color: 'orange' },
-  { name: 'Sickness', displayName: 'Sickness', color: 'red' },
+  { name: "Feeding", displayName: "Feeding", color: "green" },
+  { name: "Sleep", displayName: "Sleep", color: "blue" },
+  { name: "BowelMovement", displayName: "Bowel Movement", color: "orange" },
+  { name: "Sickness", displayName: "Sickness", color: "red" },
 ];
 
 const childStore = useChildStore();
 const authStore = useAuthStore();
 
-const selectedCategory = ref('Feeding');
+const selectedCategory = ref("Feeding");
 const showDayDialog = ref(false);
 const selectedDay = ref(null);
 const loggingsForSelectedDay = ref([]);
@@ -180,59 +179,69 @@ const selectedChildId = ref(null);
 
 // Display a friendlier category name
 function displayCategoryName(logging) {
-  const cat = categories.find(c => c.name === logging.category);
-  return cat ? cat.displayName : logging.category || 'Unknown';
+  const cat = categories.find((c) => c.name === logging.category);
+  return cat ? cat.displayName : logging.category || "Unknown";
 }
 
 // Subcategory label for feedings
 function displayFeedingSubcat(subcat) {
   // E.g. "Bottle", "Breastfeeding", or "SolidFeeding" => "Solid Feeding"
-  if (subcat === 'Bottle') return 'Bottle';
-  if (subcat === 'Breastfeeding') return 'Breastfeeding';
-  if (subcat === 'SolidFeeding') return 'Solid Feeding';
-  return subcat || 'Unknown';
+  if (subcat === "Bottle") return "Bottle";
+  if (subcat === "Breastfeeding") return "Breastfeeding";
+  if (subcat === "SolidFeeding") return "Solid Feeding";
+  return subcat || "Unknown";
 }
 
 // If user used strings like "ear_infection", "common_cold", etc.
 function displaySicknessName(str) {
-  if (!str) return '';
+  if (!str) return "";
   const map = {
-    ear_infection: 'Ear Infection',
-    common_cold: 'Common Cold',
-    teething: 'Teething',
-    fever: 'Fever',
-    influenza: 'Influenza',
-    vomiting: 'Vomiting',
+    ear_infection: "Ear Infection",
+    common_cold: "Common Cold",
+    teething: "Teething",
+    fever: "Fever",
+    influenza: "Influenza",
+    vomiting: "Vomiting",
   };
   if (map[str]) return map[str];
   // fallback => convert underscores
   return str
-    .split('_')
-    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(' ');
+    .split("_")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
 }
 
 // For solid feedings => same logic as your "feeding" page
 function getAmountText(details) {
-  if (details.jarChoice === 'half') return 'Half a jar';
-  if (details.jarChoice === 'full') return 'Full jar';
-  if (details.jarChoice === 'teaspoon' || details.tastingChoice === 'teaspoon') {
-    return details.amount || (details.teaspoonAmount ? `${details.teaspoonAmount} teaspoon(s)` : 'Not specified');
+  if (details.jarChoice === "half") return "Half a jar";
+  if (details.jarChoice === "full") return "Full jar";
+  if (
+    details.jarChoice === "teaspoon" ||
+    details.tastingChoice === "teaspoon"
+  ) {
+    return (
+      details.amount ||
+      (details.teaspoonAmount
+        ? `${details.teaspoonAmount} teaspoon(s)`
+        : "Not specified")
+    );
   }
-  if (details.squeezeChoice === 'half') return 'Half a squeeze bag';
-  if (details.squeezeChoice === 'full') return 'Full squeeze bag';
-  if (details.squeezeChoice === 'several') {
-    return details.squeezeAmount ? `${details.squeezeAmount} squeeze bag(s)` : 'Not specified';
+  if (details.squeezeChoice === "half") return "Half a squeeze bag";
+  if (details.squeezeChoice === "full") return "Full squeeze bag";
+  if (details.squeezeChoice === "several") {
+    return details.squeezeAmount
+      ? `${details.squeezeAmount} squeeze bag(s)`
+      : "Not specified";
   }
   if (details.ownAmount) return details.ownAmount;
-  return details.amount || 'Not specified';
+  return details.amount || "Not specified";
 }
 
 // Return a short "HH:MM" for the timestamp
 function simpleTimeOrDate(timestamp) {
   const d = new Date(timestamp);
-  if (isNaN(d.getTime())) return 'Invalid Date';
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (isNaN(d.getTime())) return "Invalid Date";
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 // Switch category
@@ -243,26 +252,26 @@ function selectCategory(name) {
 // On mount => fetch child => listen logs
 onMounted(() => {
   if (authStore.user) {
-    childStore.fetchChildren(authStore.user.uid).then(children => {
+    childStore.fetchChildren(authStore.user.uid).then((children) => {
       if (children.length > 0) {
         selectedChildId.value = children[0].id;
         childStore.listenToAllLoggings(selectedChildId.value, {});
       } else {
-        console.warn('No child found.');
+        console.warn("No child found.");
       }
     });
   } else {
-    console.warn('No authenticated user found.');
+    console.warn("No authenticated user found.");
   }
 });
 
 // Check missing .start
 watch(
   () => childStore.aggregatedLoggings,
-  logs => {
-    logs.forEach(log => {
+  (logs) => {
+    logs.forEach((log) => {
       if (!log.start) {
-        console.warn('Missing .start =>', log);
+        console.warn("Missing .start =>", log);
       }
     });
   }
@@ -272,19 +281,19 @@ watch(
 const sparklineData = computed(() => {
   if (!selectedChildId.value) return [];
   const dataMap = {};
-  childStore.aggregatedLoggings.forEach(log => {
+  childStore.aggregatedLoggings.forEach((log) => {
     if (log.category === selectedCategory.value) {
       const dateKey = log.start;
       if (!dataMap[dateKey]) dataMap[dateKey] = 0;
-      if (log.category === 'BowelMovement') {
-        dataMap[dateKey] += (log.details.times || 1);
+      if (log.category === "BowelMovement") {
+        dataMap[dateKey] += log.details.times || 1;
       } else {
         dataMap[dateKey] += 1;
       }
     }
   });
   const sortedDates = Object.keys(dataMap).sort();
-  return sortedDates.map(d => dataMap[d]);
+  return sortedDates.map((d) => dataMap[d]);
 });
 
 // 7-day logic
@@ -304,19 +313,19 @@ const sevenDayStats = computed(() => {
   const value = [];
   const dayData = [];
 
-  days.forEach(day => {
-    const labelStr = format(day, 'MM/dd');
+  days.forEach((day) => {
+    const labelStr = format(day, "MM/dd");
     labels.push(labelStr);
     const yyyy = day.getFullYear();
-    const mm = String(day.getMonth() + 1).padStart(2, '0');
-    const dd = String(day.getDate()).padStart(2, '0');
+    const mm = String(day.getMonth() + 1).padStart(2, "0");
+    const dd = String(day.getDate()).padStart(2, "0");
     const dayKey = `${yyyy}-${mm}-${dd}`;
 
     let dailyCount = 0;
-    childStore.aggregatedLoggings.forEach(log => {
+    childStore.aggregatedLoggings.forEach((log) => {
       if (log.start === dayKey && log.category === selectedCategory.value) {
-        if (log.category === 'BowelMovement') {
-          dailyCount += (log.details.times || 1);
+        if (log.category === "BowelMovement") {
+          dailyCount += log.details.times || 1;
         } else {
           dailyCount += 1;
         }
@@ -333,7 +342,7 @@ const sevenDayStats = computed(() => {
 function openDayDetails({ date }) {
   selectedDay.value = date;
   loggingsForSelectedDay.value = childStore.aggregatedLoggings.filter(
-    log => log.start === date && log.category === selectedCategory.value
+    (log) => log.start === date && log.category === selectedCategory.value
   );
   showDayDialog.value = true;
 }
@@ -343,21 +352,21 @@ function closeDayDetails() {
   loggingsForSelectedDay.value = [];
 }
 const selectedDayFormatted = computed(() => {
-  if (!selectedDay.value) return '';
+  if (!selectedDay.value) return "";
   const d = new Date(selectedDay.value);
-  if (isNaN(d.getTime())) return 'Invalid Date';
+  if (isNaN(d.getTime())) return "Invalid Date";
   return d.toLocaleDateString();
 });
 
 // Return the color for current category
 function getCategoryColor(catName) {
-  const c = categories.find(x => x.name === catName);
-  return c ? c.color : 'grey';
+  const c = categories.find((x) => x.name === catName);
+  return c ? c.color : "grey";
 }
 
 const selectedCategoryDisplay = computed(() => {
-  const c = categories.find(x => x.name === selectedCategory.value);
-  return c ? c.displayName : 'Category';
+  const c = categories.find((x) => x.name === selectedCategory.value);
+  return c ? c.displayName : "Category";
 });
 </script>
 

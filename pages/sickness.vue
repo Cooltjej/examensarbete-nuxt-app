@@ -84,7 +84,7 @@
             | Notes: {{ item.notes }}
             br
 
-            | {{ formatFeedingTime(item) }}
+            | {{ formatTime(item) }}
 
           template(#append)
             v-btn(icon @click="editSickness(item)" color="primary")
@@ -222,30 +222,30 @@ function formatDate(date) {
   return `${day}/${month}-${year}`;
 }
 
-function formatFeedingTime(feeding) {
+function formatTime(entry) {
+  // Renamed parameter from 'feeding' to 'entry' for generality
   if (
-    feeding.type === "bottle" ||
-    feeding.type === "breastfeeding" ||
-    feeding.type === "solidfeeding" ||
-    feeding.type === "sickness"
+    entry.type === "bottle" ||
+    entry.type === "breastfeeding" ||
+    entry.type === "solidfeeding" ||
+    entry.type === "sickness"
   ) {
-    if (feeding.timingChoice === "currentTime") {
-      return new Date(feeding.timestamp).toLocaleTimeString("sv-SE", {
+    if (entry.timingChoice === "currentTime") {
+      return new Date(entry.timestamp).toLocaleTimeString("sv-SE", {
         hour: "2-digit",
         minute: "2-digit",
       });
-    } else if (feeding.timingChoice === "specificTime") {
-      const d = formatDate(feeding.timestamp);
-      return `${d} ${feeding.fromTime} - ${feeding.toTime}`;
-    } else if (feeding.timingChoice === "timeOfDay") {
-      const d = formatDate(feeding.timestamp);
-      return `${d} ${feeding.timeOfDay}`;
+    } else if (entry.timingChoice === "specificTime") {
+      const d = formatDate(entry.timestamp);
+      return `${d} ${entry.fromTime} - ${entry.toTime}`;
+    } else if (entry.timingChoice === "timeOfDay") {
+      const d = formatDate(entry.timestamp);
+      return `${d} ${entry.timeOfDay}`;
     }
-    return formatDate(feeding.timestamp);
+    return formatDate(entry.timestamp);
   }
   return "";
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
