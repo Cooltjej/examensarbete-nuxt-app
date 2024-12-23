@@ -1,41 +1,42 @@
 <!-- pages/sickness.vue -->
 <template lang="pug">
   v-container
-    h2 Sickness Log
+    h2.h2 Sickness Log
     div(v-if="childId")
-      h3 Add New Sickness Record
-      v-btn(@click="openSickness('fever')" color="primary" class="ma-2") Fever
-      v-btn(@click="openSickness('common_cold')" color="primary" class="ma-2") Common Cold
-      v-btn(@click="openSickness('ear_infection')" color="primary" class="ma-2") Ear Infection
-      v-btn(@click="openSickness('influenza')" color="primary" class="ma-2") Influenza
-      v-btn(@click="openSickness('vomiting')" color="primary" class="ma-2") Vomiting
-      v-btn(@click="openSickness('teething')" color="primary" class="ma-2") Teething
-      v-btn(@click="openSickness('other')" color="primary" class="ma-2") Other
+      h3.h3.mb-3 Add New Sickness Record
+      v-btn(@click="openSickness('fever')" color="purple-lighten-1" rounded="xl") Fever
+      v-btn(@click="openSickness('common_cold')" color="purple-lighten-1" rounded="xl") Common Cold
+      v-btn(@click="openSickness('ear_infection')" color="purple-lighten-1" rounded="xl") Ear Infection
+      v-btn(@click="openSickness('influenza')" color="purple-lighten-1" rounded="xl") Influenza
+      v-btn(@click="openSickness('vomiting')" color="purple-lighten-1" rounded="xl") Vomiting
+      v-btn(@click="openSickness('teething')" color="purple-lighten-1" rounded="xl") Teething
+      v-btn(@click="openSickness('other')" color="purple-lighten-1" rounded="xl") Other
 
-      h3 Latest Sickness Logs
+      h3.h3 Latest Sickness Logs
       v-list
         v-list-item(v-for="item in allSicknesses" :key="item.id")
           v-list-item-title
-            | {{ formatDate(item.timestamp) }}
+            span.font-weight-bold {{ formatDate(item.timestamp) }}
             br
             // Sickness type specific fields
             template(v-if="item.sicknessType === 'fever'")
-              | Fever: 
+              span.text-decoration-underline Fever: 
               br
               |Temp: {{ item.temperature }}°C
               br
 
             template(v-else-if="item.sicknessType === 'common_cold'")
-              | Common Cold:
+              span.text-decoration-underline Common Cold:
+              
               template(v-if="item.hasFever")
                 br
                 | Temp: {{ item.temperature }}°C,
                 br
-              | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
+                | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
               br
 
             template(v-else-if="item.sicknessType === 'ear_infection'")
-              | Ear Infection:
+              span.text-decoration-underline Ear Infection:
               br
               template(v-if="item.hasFever")
                 | Temp: {{ item.temperature }}°C,
@@ -44,7 +45,7 @@
               br
 
             template(v-else-if="item.sicknessType === 'influenza'")
-              | Influenza: 
+              span.text-decoration-underline Influenza: 
               br
               | Temp: {{ item.temperature }}°C,
               br
@@ -54,13 +55,13 @@
               br
 
             template(v-else-if="item.sicknessType === 'vomiting'")
-              | Vomiting: 
+              span.text-decoration-underline Vomiting: 
               br
               | Temp: {{ item.temperature }}°C
               br
 
             template(v-else-if="item.sicknessType === 'teething'")
-              | Teething:
+              span.text-decoration-underline Teething:
               br
               template(v-if="item.hasFever")
                 | Temp: {{ item.temperature }}°C,

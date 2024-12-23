@@ -2,10 +2,10 @@
   v-container
     // 1) Category Buttons
     v-row.mb-4.justify-center
-      v-btn(
+      v-btn.my-3(
         v-for="category in categories"
         :key="category.name"
-        :color="selectedCategory === category.name ? category.color : 'grey lighten-2'"
+        :color="selectedCategory === category.name ? category.color : 'grey lighten-2'" rounded="xl"
         :variant="selectedCategory === category.name ? 'elevated' : 'text'"
         class="ma-2"
         @click="selectCategory(category.name)"
@@ -163,7 +163,7 @@ const categories = [
   { name: "Feeding", displayName: "Feeding", color: "green" },
   { name: "Sleep", displayName: "Sleep", color: "blue" },
   { name: "BowelMovement", displayName: "Bowel Movement", color: "orange" },
-  { name: "Sickness", displayName: "Sickness", color: "red" },
+  { name: "Sickness", displayName: "Sickness", color: "purple-lighten-1" },
 ];
 
 const childStore = useChildStore();

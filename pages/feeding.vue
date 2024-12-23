@@ -1,19 +1,21 @@
 <template lang="pug">
   v-container
-    h2 Feeding
+    h2.h2 Feeding
     div(v-if="childId")
-      v-btn(@click="openBottle" color="primary") Bottle
-      v-btn(@click="openBreast" color="primary") Breastfeeding
-      v-btn(@click="openSolid" color="primary") Solid
-      h3 Latest Feedings
+      v-btn(@click="openBottle" color="green" rounded="xl") Bottle
+      v-btn(@click="openBreast" color="green" rounded="xl") Breastfeeding
+      v-btn(@click="openSolid" color="green" rounded="xl") Solid
+      h3.h3 Latest Feedings
       v-list
         v-list-item(v-for="feeding in allFeedings" :key="feeding.id")
           v-list-item-title
+            span.font-weight-bold
+              | {{ formatDate(feeding.timestamp) }}
             // Visa datum
-            | {{ formatDate(feeding.timestamp) }}
+            
             br
             template(v-if="feeding.type === 'bottle'")
-              | Bottle feeding: 
+              span.text-decoration-underline Bottle feeding: 
               br 
               | {{ feeding.volume }}ml +{{ feeding.incrementVolume }}ml
               br
@@ -22,7 +24,7 @@
               | {{ formatTime(feeding) }}
 
             template(v-else-if="feeding.type === 'breastfeeding'")
-              | Breastfeeding:
+              span.text-decoration-underline Breastfeeding:
               br
               | Breast: {{ feeding.breast }}
               br
@@ -32,7 +34,7 @@
               | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
 
             template(v-else-if="feeding.type === 'solidfeeding'")
-              | Solid Food:
+              span.text-decoration-underline Solid Food:
               br
               | Solid Type: {{ feeding.solidType }}
               br

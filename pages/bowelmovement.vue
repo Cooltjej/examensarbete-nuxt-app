@@ -1,14 +1,17 @@
 <template lang="pug">
   v-container
-    h2 Bowel Movements
+    h2.h2 Bowel Movements
     div(v-if="childId")
-      v-btn(@click="openBowelMovementPopup" color="primary") Add Bowel Movement
+      v-btn.mb-3.mt-0(@click="openBowelMovementPopup" color="orange" rounded="xl") Add Bowel Movement
       // List of bowel movements
+      
       v-list
         v-list-item(v-for="movement in bowelMovements" :key="movement.id")
-          v-list-item-title {{ movement.formattedTimestamp }}: 
-          
-          | {{ movement.movementType }} 
+          v-list-item-title
+          span.font-weight-bold
+            | {{ movement.formattedTimestamp }}: 
+          br
+          span.text-decoration-underline {{ movement.movementType }} 
           br
           | ({{ movement.timeOfDay }})
           template(#append)
@@ -28,14 +31,14 @@
               v-btn(
                 v-for="category in movementCategories"
                 :key="category.name"
-                :color="movementType === category.name ? category.color : 'grey lighten-2'"
+                :color="movementType === category.name ? category.color : 'grey lighten-2'" rounded="xl"
                 :variant="movementType === category.name ? 'elevated' : 'text'"
                 class="ma-2"
                 @click="selectMovementType(category.name)"
               )
                 | {{ category.displayName }}
 
-            h3 Time of Day
+            h3.h3 Time of Day
             // Radio buttons for time of day
             v-radio-group(v-model="timeOfDay" class="mt-4")
               v-radio(v-for="item in timeOfDayItems" :key="item.value" :value="item.value" :label="item.title")

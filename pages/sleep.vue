@@ -2,14 +2,17 @@
   v-container
     v-row
       v-col(cols="12")
-        h2 Sleep
-        v-btn(@click="openSleepPopup" color="primary") Add Sleep
+        h2.h2 Sleep
+        v-btn(@click="openSleepPopup" color="primary" rounded="xl") Add Sleep
         // Lista över sleep logs (5 senaste)
         v-list
           v-list-item(v-for="log in sleepLogs" :key="log.id")
-            v-list-item-title {{ formatDate(log.timestamp) }}
-            
-            | Sleep:
+            v-list-item-title
+            span.font-weight-bold
+              br
+              | {{ formatDate(log.timestamp) }}
+            br
+            span.text-decoration-underline Sleep:
             br
             | from {{ log.fromTime }} to {{ log.toTime }}
             template(#append)
@@ -24,15 +27,15 @@
           v-card
             v-card-title Select Sleep Times
             v-card-text
-              h3 FROM
+              h3.h3 FROM
               v-time-picker(v-model="fromTime" format="24hr" view="hours")
   
-              h3 TO
+              h3.h3 TO
               v-time-picker(v-model="toTime" format="24hr" view="hours")
   
             v-card-actions
-              v-btn(@click="saveSleepLog" color="primary") Save
-              v-btn(@click="cancelPopup" color="secondary") Cancel
+              v-btn(@click="saveSleepLog" color="primary" rounded="xl") Save
+              v-btn(@click="cancelPopup" color="secondary" rounded="xl") Cancel
   
         v-snackbar(v-model="snackbar.visible" :timeout="snackbar.timeout" :color="snackbar.color")
           | {{ snackbar.message }}
