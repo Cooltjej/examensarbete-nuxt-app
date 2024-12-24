@@ -1,97 +1,105 @@
+<!-- pages/feeding.vue -->
 <template lang="pug">
   v-container
-    h2.h2 Feeding
+    h2.h2 Feeding Log
+
     div(v-if="childId")
-      v-btn(@click="openBottle" color="green" rounded="xl") Bottle
-      v-btn(@click="openBreast" color="green" rounded="xl") Breastfeeding
-      v-btn(@click="openSolid" color="green" rounded="xl") Solid
-      h3.h3 Latest Feedings
-      v-list
-        v-list-item(v-for="feeding in allFeedings" :key="feeding.id")
-          v-list-item-title
-            span.font-weight-bold
-              | {{ formatDate(feeding.timestamp) }}
-            // Visa datum
-            
-            br
-            template(v-if="feeding.type === 'bottle'")
-              span.text-decoration-underline Bottle feeding: 
-              br 
-              | {{ feeding.volume }}ml +{{ feeding.incrementVolume }}ml
-              br
-              | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
-              br
-              | {{ formatTime(feeding) }}
-
-            template(v-else-if="feeding.type === 'breastfeeding'")
-              span.text-decoration-underline Breastfeeding:
-              br
-              | Breast: {{ feeding.breast }}
-              br
-              // istället för From ... to ...
-              | {{ formatTime(feeding) }}
-              br
-              | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
-
-            template(v-else-if="feeding.type === 'solidfeeding'")
-              span.text-decoration-underline Solid Food:
-              br
-              | Solid Type: {{ feeding.solidType }}
-              br
-              | Amount: {{ feeding.amount }}
-              br
-              | {{ formatTime(feeding) }}
-              br
-              
-
-          template(#append)
-            v-btn(icon @click="editFeeding(feeding)")
-              v-icon mdi-pencil
-            v-btn(icon color="red-darken-2" @click="deleteFeeding(feeding)")
-              v-icon mdi-delete
-
-      // Komponenter för popups
-      bottle-feeding(
-        v-if="showBottle"
-        :child-id="childId"
-        :show="showBottle"
-        :feeding="editFeedingData"
-        @closed="closeBottle"
-        @refresh="handleRefresh($event)"
+      h3.h3.mb-3 Add New Feeding Record
+      v-btn(
+        v-for="type in feedingTypes"
+        :key="type"
+        @click="openFeeding(type)"
+        color="green lighten-1"
+        rounded="xl"
+        class="ma-2"
       )
+        | {{ formatFeedingType(type) }}
 
-      breast-feeding(
-        v-if="showBreast"
+      h3.h3.mt-6 Latest Feedings
+
+      div(v-if="Object.keys(groupedFeedings).length > 0")
+        v-card(v-for="(group, date) in groupedFeedings" :key="date" class="mb-4")
+          v-card-title {{ formatDate(date) }}
+          v-card-text
+            v-list
+              v-list-item(v-for="feeding in group" :key="feeding.id")
+                v-list-item-title
+                  span.text-decoration-underline {{ formatFeedingType(feeding.type) }}:
+                  br
+                  template(v-if="feeding.type === 'bottle'")
+                    | Volume: {{ feeding.volume }}ml
+                    br
+                    | Increment Volume: {{ feeding.incrementVolume }}ml
+                    br
+                    | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
+                    br
+                    | Time: {{ formatTime(feeding) }}
+                  
+                  template(v-else-if="feeding.type === 'breastfeeding'")
+                    | Breast: {{ feeding.breast }}
+                    br
+                    | Did baby burp: {{ feeding.babyBurp ? 'Yes' : 'No' }}
+                    br
+                    | Time: {{ formatTime(feeding) }}
+                  
+                  template(v-else-if="feeding.type === 'solidfeeding'")
+                    | Solid Type: {{ feeding.solidType }}
+                    br
+                    | Amount: {{ feeding.amount }}
+                    br
+                    | Time: {{ formatTime(feeding) }}
+                
+                  v-list-item-subtitle {{ formatTime(feeding) }}
+                
+                template(#append)
+                  v-btn.mb-3(icon @click="editFeeding(feeding)" color="blue-lighten-1" small aria-labe="Edit Feeding")
+                    v-icon mdi-pencil
+                  v-btn.mb-3(icon @click="deleteFeeding(feeding)" color="red darken-1" small aria-label="Delete Feeding")
+                    v-icon mdi-delete
+
+      div(v-else)
+          p No feeding records found.
+
+      // Feeding Dialog Components
+      BottleFeeding(
+        v-if="showBottleFeeding"
         :child-id="childId"
-        :show="showBreast"
+        :show="showBottleFeeding"
         v-model:feeding="editFeedingData"
-        @closed="closeBreast"
+        @closed="closeBottleFeeding"
         @refresh="handleRefresh($event)"
       )
 
-      solid-feeding(
-        v-if="showSolid"
+      BreastFeeding(
+        v-if="showBreastFeeding"
         :child-id="childId"
-        :show="showSolid"
+        :show="showBreastFeeding"
         v-model:feeding="editFeedingData"
-        @closed="closeSolid"
+        @closed="closeBreastFeeding"
         @refresh="handleRefresh($event)"
       )
 
-    div(v-else)
-      | Loading or no child found...
+      SolidFeeding(
+        v-if="showSolidFeeding"
+        :child-id="childId"
+        :show="showSolidFeeding"
+        v-model:feeding="editFeedingData"
+        @closed="closeSolidFeeding"
+        @refresh="handleRefresh($event)"
+      )
 
-  // Snackbar
-  snackbar-message(
-    :message="snackbarMessage"
-    :color="snackbarColor"
-    :show="snackbarShow"
-    @update:show="snackbarShow = $event"
-  )
+      SnackbarMessage(
+        :message="snackbarMessage"
+        :color="snackbarColor"
+        :show="snackbarShow"
+        @update:show="snackbarShow = $event"
+      )
+    
+    div(v-else) Loading or no child found...
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "~/stores/useAuth";
 import { useChildStore } from "~/stores/useChildStore";
 import BottleFeeding from "~/components/BottleFeeding.vue";
@@ -103,22 +111,13 @@ const auth = useAuthStore();
 const childStore = useChildStore();
 
 const childId = ref(null);
-
-// Visa/hide popups
-const showBottle = ref(false);
-const showBreast = ref(false);
-const showSolid = ref(false);
-
-// Hantera vilken feeding vi redigerar
-const editFeedingData = ref(null);
-
-// Lista över feedings
-let bottleList = [];
-let breastList = [];
-let solidList = [];
 const allFeedings = ref([]);
 
-// Snackbar-states
+const showBottleFeeding = ref(false);
+const showBreastFeeding = ref(false);
+const showSolidFeeding = ref(false);
+const editFeedingData = ref(null);
+
 const snackbarShow = ref(false);
 const snackbarMessage = ref("");
 const snackbarColor = ref("success");
@@ -131,113 +130,110 @@ onMounted(async () => {
   const children = await childStore.fetchChildren(auth.user.uid);
   if (children.length > 0) {
     childId.value = children[0].id;
-
-    childStore.listenToBottleFeedings(childId.value, (feedings) => {
-      bottleList = feedings.map((f) => ({ ...f, type: "bottle" }));
-      updateAllFeedings();
-    });
-
-    childStore.listenToBreastfeedings(childId.value, (feedings) => {
-      breastList = feedings.map((f) => ({ ...f, type: "breastfeeding" }));
-      updateAllFeedings();
-    });
-
-    childStore.listenToSolidfeedings(childId.value, (feedings) => {
-      solidList = feedings.map((f) => ({ ...f, type: "solidfeeding" }));
-      updateAllFeedings();
+    childStore.listenToAllLoggings(childId.value, {
+      bottleFeedings: (feedings) => {
+        updateFeedings("bottle", feedings);
+      },
+      breastfeedings: (feedings) => {
+        updateFeedings("breastfeeding", feedings);
+      },
+      solidfeedings: (feedings) => {
+        updateFeedings("solidfeeding", feedings);
+      },
     });
   } else {
     console.error("No child found.");
   }
 });
-
-function openBottle() {
-  editFeedingData.value = {
-    volume: null,
-    incrementVolume: null,
-    fromTime: "12:00",
-    toTime: "12:00",
-    timingChoice: "currentTime",
-    timeOfDay: "morning",
-    babyBurp: false,
-  }; // Ny feeding
-  showBottle.value = true;
+function updateFeedings(type, feedings) {
+  const updatedFeedings = feedings.map((f) => ({ ...f, type }));
+  allFeedings.value = [
+    ...allFeedings.value.filter((f) => f.type !== type),
+    ...updatedFeedings,
+  ]
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 15);
 }
 
-function openBreast() {
-  // Instead of null, set the default feeding data you want.
+const feedingTypes = ["bottle", "breastfeeding", "solidfeeding"];
+
+const groupedFeedings = computed(() => {
+  const groups = {};
+  allFeedings.value.forEach((feeding) => {
+    if (!feeding.timestamp) {
+      console.warn("Missing timestamp for feeding:", feeding);
+      return;
+    }
+    const date = new Date(feeding.timestamp).toISOString().split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(feeding);
+  });
+  console.log("Grouped Feedings:", groups);
+  return groups;
+});
+
+function formatFeedingType(type) {
+  return type
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function openFeeding(type) {
   editFeedingData.value = {
-    breast: "left",
-    fromTime: "12:00",
-    toTime: "12:00",
-    timingChoice: "currentTime",
-    timeOfDay: "morning",
-    babyBurp: false,
+    type: type,
+    timestamp: new Date().toISOString(),
+    // Initialize other fields based on type
+    ...(type === "bottle" && {
+      volume: null,
+      incrementVolume: null,
+      babyBurp: false,
+    }),
+    ...(type === "breastfeeding" && { breast: "left", babyBurp: false }),
+    ...(type === "solidfeeding" && { solidType: "", amount: "" }),
   };
-  showBreast.value = true;
+
+  if (type === "bottle") {
+    showBottleFeeding.value = true;
+  } else if (type === "breastfeeding") {
+    showBreastFeeding.value = true;
+  } else if (type === "solidfeeding") {
+    showSolidFeeding.value = true;
+  }
 }
 
-function openSolid() {
-  editFeedingData.value = {
-    solidType: null,
-    jarChoice: null,
-    squeezeChoice: null,
-    tastingChoice: null,
-    teaspoonAmount: null,
-    squeezeAmount: null,
-    ownAmount: null,
-    fromTime: "12:00",
-    toTime: "12:00",
-    timingChoice: "currentTime",
-    timeOfDay: "morning",
-  };
-  showSolid.value = true;
-}
-
-function closeBottle() {
-  showBottle.value = false;
+function closeBottleFeeding() {
+  showBottleFeeding.value = false;
   editFeedingData.value = null;
 }
 
-function closeBreast() {
-  showBreast.value = false;
+function closeBreastFeeding() {
+  showBreastFeeding.value = false;
   editFeedingData.value = null;
 }
 
-function closeSolid() {
-  showSolid.value = false;
+function closeSolidFeeding() {
+  showSolidFeeding.value = false;
   editFeedingData.value = null;
-}
-
-function updateAllFeedings() {
-  const combined = [...bottleList, ...breastList, ...solidList];
-  const sorted = combined.sort(
-    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-  );
-  allFeedings.value = sorted.slice(0, 15);
 }
 
 function editFeeding(feeding) {
-  editFeedingData.value = feeding;
+  editFeedingData.value = { ...feeding };
   if (feeding.type === "bottle") {
-    showBottle.value = true;
+    showBottleFeeding.value = true;
   } else if (feeding.type === "breastfeeding") {
-    showBreast.value = true;
+    showBreastFeeding.value = true;
   } else if (feeding.type === "solidfeeding") {
-    showSolid.value = true;
+    showSolidFeeding.value = true;
   }
 }
 
 async function deleteFeeding(feeding) {
   if (!childId.value) return;
   try {
-    if (feeding.type === "bottle") {
-      await childStore.deleteBottleFeeding(childId.value, feeding.id);
-    } else if (feeding.type === "breastfeeding") {
-      await childStore.deleteBreastfeeding(childId.value, feeding.id);
-    } else if (feeding.type === "solidfeeding") {
-      await childStore.deleteSolidfeeding(childId.value, feeding.id);
-    }
+    await childStore.deleteFeeding(childId.value, feeding.id);
     showSnackbar("Feeding deleted successfully!", "success");
   } catch (error) {
     console.error("Error deleting feeding:", error);
@@ -251,7 +247,6 @@ function handleRefresh(eventData) {
   } else {
     showSnackbar("Data updated successfully!", "success");
   }
-  // Lyssnare uppdaterar redan listorna
 }
 
 function showSnackbar(msg, color = "success") {
@@ -260,49 +255,27 @@ function showSnackbar(msg, color = "success") {
   snackbarShow.value = true;
 }
 
-// Hjälpfunktioner för format
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  return date.toLocaleString("sv-SE", {
-    timeZone: "Europe/Stockholm",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatDate(date) {
-  const d = new Date(date);
+function formatDate(dateString) {
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "Invalid Date";
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = String(d.getFullYear()).slice(-2);
   return `${day}/${month}-${year}`;
 }
 
-function formatTime(entry) {
-  // Renamed parameter from 'feeding' to 'entry' for generality
-  if (
-    entry.type === "bottle" ||
-    entry.type === "breastfeeding" ||
-    entry.type === "solidfeeding" ||
-    entry.type === "sickness"
-  ) {
-    if (entry.timingChoice === "currentTime") {
-      return new Date(entry.timestamp).toLocaleTimeString("sv-SE", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else if (entry.timingChoice === "specificTime") {
-      const d = formatDate(entry.timestamp);
-      return `${d} ${entry.fromTime} - ${entry.toTime}`;
-    } else if (entry.timingChoice === "timeOfDay") {
-      const d = formatDate(entry.timestamp);
-      return `${d} ${entry.timeOfDay}`;
-    }
-    return formatDate(entry.timestamp);
-  }
-  return "";
+function formatTime(feeding) {
+  const date = new Date(feeding.timestamp);
+  return date.toLocaleTimeString("sv-SE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 </script>
+
+<style scoped>
+/* Add any custom styles here */
+.ma-2 {
+  margin: 0.5rem;
+}
+</style>

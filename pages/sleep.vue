@@ -3,26 +3,31 @@
     v-row
       v-col(cols="12")
         h2.h2 Sleep
+  
         v-btn(@click="openSleepPopup" color="primary" rounded="xl") Add Sleep
-        // Lista över sleep logs (5 senaste)
-        v-list
-          v-list-item(v-for="log in sleepLogs" :key="log.id")
-            v-list-item-title
-            span.font-weight-bold
-              br
-              | {{ formatDate(log.timestamp) }}
-            br
-            span.text-decoration-underline Sleep:
-            br
-            | from {{ log.fromTime }} to {{ log.toTime }}
-            template(#append)
-              v-btn(icon @click="editSleepLog(log)")
-                v-icon mdi-pencil
-              v-btn(icon color="red-darken-2" @click="deleteSleepLog(log.id)")
-                v-icon mdi-delete
   
+        h3.h3.mt-6 Latest Sleep Logs
   
-        // Popup för att välja FROM/TO tid
+        div(v-if="Object.keys(groupedSleepLogs).length > 0")
+          v-card(v-for="(group, date) in groupedSleepLogs" :key="date" class="mb-4")
+            v-card-title {{ formatDate(date) }}
+            v-card-text
+              v-list
+                v-list-item(v-for="log in group" :key="log.id")
+                  v-list-item-title
+                    span.text-decoration-underline Sleep:
+                    br
+                    | From: {{ formatTime(log.fromTime) }}
+                    br
+                    | To: {{ formatTime(log.toTime) }}
+                  
+                  template(#append)
+                    v-btn.mb-3(icon @click="editSleepLog(log)" color="blue-lighten-1" small aria-label="Edit Sleep Log")
+                      v-icon mdi-pencil
+                    v-btn.mb-3(icon @click="deleteSleepLog(log.id)" color="red darken-1" small aria-label="Delete Sleep Log")
+                      v-icon mdi-delete
+  
+        // Popup for selecting FROM/TO time
         v-dialog(v-model="showPopup" persistent max-width="400")
           v-card
             v-card-title Select Sleep Times
@@ -42,7 +47,7 @@
   </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import { useAuthStore } from "~/stores/useAuth";
 import { useChildStore } from "~/stores/useChildStore";
 import { getFirestore, doc, deleteDoc } from "firebase/firestore";
@@ -67,6 +72,23 @@ const snackbar = reactive({
   timeout: 3000,
 });
 
+const groupedSleepLogs = computed(() => {
+  const groups = {};
+  sleepLogs.value.forEach((log) => {
+    if (!log.timestamp) {
+      console.warn("Missing timestamp for sleep log:", log);
+      return;
+    }
+    const date = new Date(log.timestamp).toISOString().split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(log);
+  });
+  console.log("Grouped Sleep Logs:", groups);
+  return groups;
+});
+
 function openSleepPopup() {
   resetForm();
   showPopup.value = true;
@@ -76,7 +98,9 @@ function cancelPopup() {
   selectedLogId.value = null;
   showPopup.value = false;
 }
-
+function formatTime(time) {
+  return time; // Assuming time is already in "HH:MM" format
+}
 async function saveSleepLog() {
   if (!childDetails.value?.id) {
     console.error("No childId found.");
@@ -142,27 +166,17 @@ onMounted(async () => {
     console.error("User not authenticated.");
     return;
   }
-
   const children = await childStore.fetchChildren(auth.user.uid);
   if (children.length > 0) {
     childDetails.value = children[0];
+    childStore.listenToSleepLogs(childDetails.value.id, (logs) => {
+      sleepLogs.value = logs
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 15);
+    });
   } else {
     console.error("No child found.");
-    return;
   }
-
-  const updateLogs = (logs) => {
-    const sorted = logs.sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    );
-    const recentFive = sorted.slice(0, 5);
-    sleepLogs.value = recentFive.map((log) => ({
-      ...log,
-      formattedTimestamp: formatDate(log.timestamp),
-    }));
-  };
-
-  childStore.listenToSleepLogs(childDetails.value.id, updateLogs);
 });
 
 function formatDate(timestamp) {
