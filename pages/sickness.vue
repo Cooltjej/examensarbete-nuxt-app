@@ -23,43 +23,44 @@
             v-list
               v-list-item(v-for="item in group" :key="item.id")
                 v-list-item-title
-                  span {{ formatSicknessType(item.sicknessType) }}:
+                  span.text-decoration-underline {{ formatSicknessType(item.sicknessType) }}
+                  | :
+                  br
+                  template(v-if="item.sicknessType === 'fever'")
+                    | Temp: {{ item.temperature }}°C
+                  template(v-else-if="item.sicknessType === 'common_cold'")
+                    | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
                     br
-                    template(v-if="item.sicknessType === 'fever'")
-                      | Temp: {{ item.temperature }}°C
-                    template(v-else-if="item.sicknessType === 'common_cold'")
-                      | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
-                      br
-                      | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
-                    template(v-else-if="item.sicknessType === 'ear_infection'")
-                      | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
-                      br
-                      | Ear(s): {{ item.ear }}
-                    template(v-else-if="item.sicknessType === 'influenza'")
-                      | Temp: {{ item.temperature }}°C,
-                      br
-                      | Vomiting: {{ item.vomiting ? 'Yes' : 'No' }},
-                      br
-                      | Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
-                    template(v-else-if="item.sicknessType === 'vomiting'")
-                      | Temp: {{ item.temperature }}°C
-                    template(v-else-if="item.sicknessType === 'teething'")
-                      | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }},
-                      br
-                      | Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }},
-                      br
-                      | Gassy: {{ item.gassy ? 'Yes' : 'No' }}
-                    template(v-else-if="item.sicknessType === 'other'")
-                      | Other Sickness
+                    | Runny Nose: {{ item.runnyNose ? 'Yes' : 'No' }}
+                  template(v-else-if="item.sicknessType === 'ear_infection'")
+                    | Temp: {{ item.hasFever ? item.temperature + ' °C' : 'No temp' }},
                     br
-                    template(v-if="item.hadMedicine")
-                      | Medicine Given at: {{ item.medicineTime }}
-                    template(v-else)
-                      | Medicine Given at: No medicine given
+                    | Ear(s): {{ item.ear }}
+                  template(v-else-if="item.sicknessType === 'influenza'")
+                    | Temp: {{ item.temperature }}°C,
                     br
-                    | Notes: {{ item.notes || 'No notes' }}
-                  v-list-item-subtitle {{ formatTime(item) }}
-                  
+                    | Vomiting: {{ item.vomiting ? 'Yes' : 'No' }},
+                    br
+                    | Diarrhea: {{ item.diarrhea ? 'Yes' : 'No' }}
+                  template(v-else-if="item.sicknessType === 'vomiting'")
+                    | Temp: {{ item.temperature }}°C
+                  template(v-else-if="item.sicknessType === 'teething'")
+                    | Stomachache: {{ item.stomachache ? 'Yes' : 'No' }},
+                    br
+                    | Fussy Sleep: {{ item.fussySleep ? 'Yes' : 'No' }},
+                    br
+                    | Gassy: {{ item.gassy ? 'Yes' : 'No' }}
+                  template(v-else-if="item.sicknessType === 'other'")
+                    | Other Sickness
+                  br
+                  template(v-if="item.hadMedicine")
+                    | Medicine Given at: {{ item.medicineTime }}
+                  template(v-else)
+                    | Medicine Given at: No medicine given
+                  br
+                  | Notes: {{ item.notes || 'No notes' }}
+                v-list-item-subtitle {{ formatTime(item) }}
+                
                 template(#append)
                   v-btn.mb-3(icon @click="editSickness(item)" color="blue-lighten-1" small aria-label="Edit Sickness")
                     v-icon mdi-pencil
